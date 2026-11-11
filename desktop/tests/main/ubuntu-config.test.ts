@@ -10,6 +10,6 @@ describe('Ubuntu packaging', () => {
       from: '../artifacts/backend/linux-${arch}', to: 'backend', filter: ['**/*']
     })
     expect(config.build.deb.depends).toEqual(expect.arrayContaining(['libsecret-tools', 'gnome-keyring']))
-    expect(config.build.extraResources).toBeUndefined()
+    expect(config.build.extraResources).toEqual([{ from: 'build', to: '.', filter: ['google-oauth.json'] }])
   })
 })

@@ -1,5 +1,10 @@
 export const backendCommands = [
   'bootstrap',
+  'driveStatus',
+  'driveConnect',
+  'driveDisconnect',
+  'driveUpload',
+  'driveDownload',
   'exportAccounts',
   'importAccounts',
   'listProfiles',

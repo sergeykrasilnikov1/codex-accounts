@@ -53,6 +53,7 @@
     "appId": "app.codexaccountswitcher.desktop",
     "productName": "Codex Accounts",
     "asar": true,
+    "extraResources": [{ "from": "build", "to": ".", "filter": ["google-oauth.json"] }],
     "directories": {
       "output": "release",
       "buildResources": "build"

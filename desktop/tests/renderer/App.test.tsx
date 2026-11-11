@@ -55,7 +55,8 @@ describe('App', () => {
     window.codexSwitcher = { invoke, selectCodexHome: vi.fn(async () => null), updates }
     render(<App />)
     fireEvent.click(await screen.findByRole('button', { name: /настройки/i }))
-    const save = screen.getByRole('button', { name: 'Сохранить в Google Drive' })
+    fireEvent.click(screen.getByText('Перенос через файл'))
+    const save = screen.getByRole('button', { name: 'Экспорт файла' })
     expect(save).toBeDisabled()
     const password = screen.getByLabelText('Мастер-пароль (от 12 символов)')
     const repeat = screen.getByLabelText('Повторите пароль для сохранения')
@@ -66,6 +67,20 @@ describe('App', () => {
     await waitFor(() => expect(invoke).toHaveBeenCalledWith('exportAccounts', { password: 'synthetic-password' }))
     expect(password).toHaveValue('')
     expect(repeat).toHaveValue('')
+  })
+
+  it('downloads directly from connected Drive without choosing a file', async () => {
+    const invoke = vi.fn(async (command: string) => ({ id: 'test', ok: true, data: command === 'driveStatus' ? { connected: true, configured: true } : command === 'driveDownload' ? { count: 1 } : bootstrap, error: null })) as unknown as DesktopApi['invoke']
+    const selectCodexHome = vi.fn(async () => null)
+    window.codexSwitcher = { invoke, selectCodexHome, updates }
+    vi.spyOn(window, 'confirm').mockReturnValueOnce(true)
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /настройки/i }))
+    await screen.findByText('Подключён. Архив загружается напрямую из облака, без выбора файлов и папок.')
+    fireEvent.change(screen.getByLabelText('Мастер-пароль (от 12 символов)'), { target: { value: 'synthetic-password' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Загрузить из Google Drive' }))
+    await waitFor(() => expect(invoke).toHaveBeenCalledWith('driveDownload', { password: 'synthetic-password' }))
+    expect(selectCodexHome).not.toHaveBeenCalled()
   })
 
   it('reports the active Codex process state from backend metadata', async () => {

@@ -13,6 +13,10 @@ import {
 import { BackendClient } from './backend-client'
 import type { UpdateManager } from './update-manager'
 import { isTrustedSender } from './window-security'
+import { GoogleDrive } from './google-drive'
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 function assertTrusted(event: IpcMainInvokeEvent, trustedEntryUrl: string): void {
   if (!event.senderFrame || !isTrustedSender(event.senderFrame.url, trustedEntryUrl)) {
@@ -21,10 +25,46 @@ function assertTrusted(event: IpcMainInvokeEvent, trustedEntryUrl: string): void
 }
 
 export function registerIpc(backend: BackendClient, updates: UpdateManager, trustedEntryUrl: string): void {
+  const drive = new GoogleDrive()
+  let driveBusy = false
   ipcMain.handle(IPC_INVOKE, async (event, command: unknown, payload?: unknown) => {
     assertTrusted(event, trustedEntryUrl)
     if (!isBackendCommand(command)) {
       throw new Error('Unsupported desktop command.')
+    }
+    if (command.startsWith('drive')) {
+      if (command === 'driveStatus') return { id: '', ok: true, data: drive.status(), error: null }
+      if (driveBusy) return { id: '', ok: false, data: null, error: 'Операция Google Drive уже выполняется.' }
+      driveBusy = true
+      let directory: string | undefined
+      try {
+        let data: unknown
+        if (command === 'driveConnect') data = await drive.connect()
+        else if (command === 'driveDisconnect') data = await drive.disconnect()
+        else {
+          const password = payload && typeof payload === 'object' && 'password' in payload ? payload.password : undefined
+          if (typeof password !== 'string' || password.length < 12 || password.length > 1024) throw new Error('Мастер-пароль должен содержать от 12 до 1024 символов.')
+          directory = await mkdtemp(join(tmpdir(), 'codex-drive-'))
+          if (command === 'driveUpload') {
+            const result = await backend.invoke('exportAccounts', { password, path: directory })
+            if (!result.ok) return result
+            const name = (await readdir(directory)).find(file => file.endsWith('.encrypted'))
+            if (!name) throw new Error('Не удалось создать архив аккаунтов.')
+            await drive.upload(await readFile(join(directory, name)))
+            data = result.data
+          } else {
+            const path = join(directory, 'download.encrypted')
+            await writeFile(path, await drive.download(), { mode: 0o600, flag: 'wx' })
+            return await backend.invoke('importAccounts', { password, path })
+          }
+        }
+        return { id: '', ok: true, data, error: null }
+      } catch (error) {
+        return { id: '', ok: false, data: null, error: error instanceof Error ? error.message : 'Ошибка Google Drive.' }
+      } finally {
+        if (directory) await rm(directory, { recursive: true, force: true })
+        driveBusy = false
+      }
     }
     if (command === 'exportAccounts' || command === 'importAccounts') {
       const importing = command === 'importAccounts'

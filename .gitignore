@@ -21,6 +21,7 @@ _account_profiles/
 _account_switcher_backups/
 *.account-switcher.bak
 Codex-Accounts-*.encrypted
+desktop/build/google-oauth.json
 
 # Local app database and runtime files
 switcher.db
