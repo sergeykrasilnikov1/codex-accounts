@@ -122,7 +122,7 @@
       "category": "Utility",
       "icon": "build/account-switcher.png",
       "artifactName": "Codex-Accounts-${version}-${arch}.${ext}",
-      "maintainer": "sergeykrasilnikov1",
+      "maintainer": "sergeykrasilnikov1 <100011841+sergeykrasilnikov1@users.noreply.github.com>",
       "extraResources": [
         {
           "from": "../artifacts/backend/linux-${arch}",

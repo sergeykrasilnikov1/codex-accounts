@@ -26,10 +26,10 @@ const profiles = [
   { name: 'empty', displayName: 'Новый', active: false, hasCredentials: false, credentialStatus: 'missing' }
 ]
 
-function setup(invoke = vi.fn().mockResolvedValue({ ok: true, data: profiles })) {
+function setup(invoke = vi.fn().mockResolvedValue({ ok: true, data: profiles }), platform: NodeJS.Platform = 'win32') {
   const management = vi.fn()
   const quit = vi.fn()
-  const tray = new AccountTray({ invoke } as unknown as BackendClient, {} as NativeImage, management, quit)
+  const tray = new AccountTray({ invoke } as unknown as BackendClient, {} as NativeImage, management, quit, platform)
   return { tray, invoke, management, quit }
 }
 
@@ -59,13 +59,14 @@ describe('account tray', () => {
     expect(quit).toHaveBeenCalledOnce()
   })
 
-  it('switches on one click and blocks duplicate clicks until completion', async () => {
+  it.each(['win32', 'linux'] as const)('switches on one click and blocks duplicate clicks on %s', async (platform) => {
     let complete!: (value: unknown) => void
-    const { tray, invoke } = setup()
+    const { tray, invoke } = setup(undefined, platform)
     await tray.open()
     invoke.mockImplementationOnce(() => new Promise(resolve => { complete = resolve }))
-    click(1)
-    click(1)
+    const selected = mocks.menu[1]
+    selected.click?.({} as never, {} as never, {} as never)
+    selected.click?.({} as never, {} as never, {} as never)
     expect(invoke).toHaveBeenCalledTimes(2)
     expect(invoke).toHaveBeenLastCalledWith('switchProfile', { name: 'next' })
     await tray.open()
