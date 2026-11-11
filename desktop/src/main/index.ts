@@ -92,8 +92,9 @@ const hasLock = isE2E || app.requestSingleInstanceLock()
 if (!hasLock) {
   app.quit()
 } else {
-  app.on('second-instance', () => {
-    void accountTray?.open()
+  app.on('second-instance', (_event, commandLine: string[] = []) => {
+    if (commandLine.includes('--manage')) void createMainWindow()
+    else void accountTray?.open()
   })
 
   app.whenReady().then(async () => {
@@ -104,6 +105,7 @@ if (!hasLock) {
     }
     accountTray = new AccountTray(backend, applicationIcon,
       () => { void createMainWindow() }, () => app.quit())
+    if (process.argv.includes('--manage')) await createMainWindow()
   })
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

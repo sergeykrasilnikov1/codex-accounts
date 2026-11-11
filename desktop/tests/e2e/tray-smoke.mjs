@@ -24,7 +24,7 @@ try {
   }), { timeout: 30000 }).toBeDefined()
   const items = await application.evaluate(() => globalThis.traySmokeItems)
   assert.ok(items?.some(item => item.label === 'Управление аккаунтами…'), 'Tray menu was not created.')
-  await application.evaluate(({ app }) => app.emit('activate'))
+  await application.evaluate(({ app }) => app.emit('second-instance', {}, ['--manage']))
   const page = await application.firstWindow()
   await page.locator('.app-shell').waitFor()
   const result = await page.evaluate(() => window.codexSwitcher.invoke('listProfiles'))
