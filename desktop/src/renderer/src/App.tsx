@@ -458,10 +458,10 @@ export default function App() {
                   const result = await runCommand<typeof driveStatus>(driveStatus.connected ? 'driveDisconnect' : 'driveConnect')
                   if (result) setDriveStatus(result)
                 }}>{driveStatus.connected ? 'Отключить Google Drive' : 'Подключить Google Drive'}</button>
-                <label>Мастер-пароль (от 12 символов)<input type="password" autoComplete="off" value={archivePassword} onChange={event => setArchivePassword(event.target.value)} /></label>
+                <label>Мастер-пароль (от 8 символов)<input type="password" autoComplete="off" value={archivePassword} onChange={event => setArchivePassword(event.target.value)} /></label>
                 <label>Повторите пароль для сохранения<input type="password" autoComplete="off" value={archivePasswordRepeat} onChange={event => setArchivePasswordRepeat(event.target.value)} /></label>
                 <p>Пароль не сохраняется. Без него архив нельзя восстановить. Загрузка добавит профили из последнего сохранения, не меняя текущий вход.</p>
-                <div className="update-actions">{(['driveUpload', 'driveDownload'] as const).map(command => <button key={command} className="button button--primary" disabled={busyCommand !== null || !driveStatus.connected || archivePassword.length < 12 || (command === 'driveUpload' && archivePassword !== archivePasswordRepeat)} onClick={async () => {
+                <div className="update-actions">{(['driveUpload', 'driveDownload'] as const).map(command => <button key={command} className="button button--primary" disabled={busyCommand !== null || !driveStatus.connected || archivePassword.length < 8 || (command === 'driveUpload' && archivePassword !== archivePasswordRepeat)} onClick={async () => {
                   if (command === 'driveDownload' && !window.confirm('Загрузить аккаунты из облака? Повторная загрузка создаст копии профилей.')) return
                   const password = archivePassword
                   setArchivePassword(''); setArchivePasswordRepeat('')
@@ -469,7 +469,7 @@ export default function App() {
                   if (result) { await refresh(); setNotice(`Аккаунтов ${command === 'driveUpload' ? 'сохранено в Google Drive' : 'загружено из Google Drive'}: ${result.count}`) }
                 }}>{command === 'driveUpload' ? 'Сохранить в Google Drive' : 'Загрузить из Google Drive'}</button>)}</div>
                 <details><summary>Перенос через файл</summary>
-                <div className="update-actions">{(['exportAccounts', 'importAccounts'] as const).map(command => <button key={command} className="button" disabled={busyCommand !== null || archivePassword.length < 12 || (command === 'exportAccounts' && archivePassword !== archivePasswordRepeat)} onClick={async () => {
+                <div className="update-actions">{(['exportAccounts', 'importAccounts'] as const).map(command => <button key={command} className="button" disabled={busyCommand !== null || archivePassword.length < 8 || (command === 'exportAccounts' && archivePassword !== archivePasswordRepeat)} onClick={async () => {
                   if (command === 'importAccounts' && !window.confirm('Добавить аккаунты из архива? Повторный импорт создаст копии.')) return
                   const password = archivePassword
                   setArchivePassword('')

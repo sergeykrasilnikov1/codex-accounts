@@ -9,11 +9,12 @@ export class AccountTray {
 
   constructor(private readonly backend: BackendClient, icon: NativeImage,
     private readonly openManagement: () => void, private readonly quit: () => void,
-    private readonly platform: NodeJS.Platform = process.platform) {
+    private readonly platform: NodeJS.Platform = process.platform,
+    private readonly openPopup?: () => void) {
     this.tray = new Tray(icon)
     this.tray.setToolTip('Codex Accounts')
     this.tray.on('click', () => { void this.open() })
-    this.tray.on('right-click', () => { void this.open() })
+    this.tray.on('right-click', () => { void this.open(false) })
     if (this.platform === 'linux') {
       this.showMenu([
         { label: 'Загрузка аккаунтов…', enabled: false },
@@ -27,10 +28,11 @@ export class AccountTray {
   private showMenu(items: MenuItemConstructorOptions[], popup: boolean): void {
     const menu = Menu.buildFromTemplate(items)
     if (this.platform === 'linux') this.tray.setContextMenu(menu)
-    else if (popup) this.tray.popUpContextMenu(menu)
+    else this.tray.popUpContextMenu(menu)
   }
 
   async open(popup = true): Promise<void> {
+    if (popup && this.openPopup) { this.openPopup(); return }
     if (this.loading) return
     if (this.switching) {
       this.showMenu([{ label: 'Переключение аккаунта…', enabled: false }], popup)

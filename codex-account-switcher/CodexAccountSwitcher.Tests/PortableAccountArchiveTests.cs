@@ -35,4 +35,12 @@ public sealed class PortableAccountArchiveTests
         Assert.Throws<InvalidDataException>(() => PortableAccountArchive.Encrypt(Accounts(), "short"));
         Assert.Throws<InvalidDataException>(() => PortableAccountArchive.Encrypt([new("test", "[]"u8.ToArray())], Password));
     }
+
+    [Fact]
+    public void AcceptsEightCharactersAndRejectsSeven()
+    {
+        var encrypted = PortableAccountArchive.Encrypt(Accounts(), "pass1234");
+        Assert.Single(PortableAccountArchive.Decrypt(encrypted, "pass1234"));
+        Assert.Throws<InvalidDataException>(() => PortableAccountArchive.Encrypt(Accounts(), "pass123"));
+    }
 }

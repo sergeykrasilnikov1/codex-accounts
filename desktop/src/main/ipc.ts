@@ -24,13 +24,17 @@ function assertTrusted(event: IpcMainInvokeEvent, trustedEntryUrl: string): void
   }
 }
 
-export function registerIpc(backend: BackendClient, updates: UpdateManager, trustedEntryUrl: string): void {
+export function registerIpc(backend: BackendClient, updates: UpdateManager, trustedEntryUrl: string, openManagement?: () => void): void {
   const drive = new GoogleDrive()
   let driveBusy = false
   ipcMain.handle(IPC_INVOKE, async (event, command: unknown, payload?: unknown) => {
     assertTrusted(event, trustedEntryUrl)
     if (!isBackendCommand(command)) {
       throw new Error('Unsupported desktop command.')
+    }
+    if (command === 'openManagement') {
+      openManagement?.()
+      return { id: '', ok: true, data: null, error: null }
     }
     if (command.startsWith('drive')) {
       if (command === 'driveStatus') return { id: '', ok: true, data: drive.status(), error: null }
@@ -43,7 +47,7 @@ export function registerIpc(backend: BackendClient, updates: UpdateManager, trus
         else if (command === 'driveDisconnect') data = await drive.disconnect()
         else {
           const password = payload && typeof payload === 'object' && 'password' in payload ? payload.password : undefined
-          if (typeof password !== 'string' || password.length < 12 || password.length > 1024) throw new Error('Мастер-пароль должен содержать от 12 до 1024 символов.')
+          if (typeof password !== 'string' || password.length < 8 || password.length > 1024) throw new Error('Мастер-пароль должен содержать от 8 до 1024 символов.')
           directory = await mkdtemp(join(tmpdir(), 'codex-drive-'))
           if (command === 'driveUpload') {
             const result = await backend.invoke('exportAccounts', { password, path: directory })

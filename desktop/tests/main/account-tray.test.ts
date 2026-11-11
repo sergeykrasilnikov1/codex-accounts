@@ -40,6 +40,17 @@ function click(index: number): void {
 describe('account tray', () => {
   beforeEach(() => { vi.clearAllMocks(); mocks.menu = [] })
 
+  it('opens the large-font popup on primary clicks and retains the native fallback', async () => {
+    const invoke = vi.fn().mockResolvedValue({ ok: true, data: profiles })
+    const popup = vi.fn()
+    const tray = new AccountTray({ invoke } as unknown as BackendClient, {} as NativeImage, vi.fn(), vi.fn(), 'win32', popup)
+    await tray.open()
+    expect(popup).toHaveBeenCalledOnce()
+    expect(invoke).not.toHaveBeenCalled()
+    await tray.open(false)
+    expect(invoke).toHaveBeenCalledWith('listProfiles')
+  })
+
   it('initializes a persistent native context menu for Ubuntu indicators', async () => {
     const invoke = vi.fn().mockResolvedValue({ ok: true, data: profiles })
     new AccountTray({ invoke } as unknown as BackendClient, {} as NativeImage, vi.fn(), vi.fn(), 'linux')

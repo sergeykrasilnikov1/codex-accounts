@@ -58,7 +58,7 @@ public static class PortableAccountArchive
 
     private static void ValidatePassword(string password)
     {
-        if (password.Length < 12 || password.Length > 1024) throw new InvalidDataException("Мастер-пароль должен содержать от 12 до 1024 символов.");
+        if (password.Length < 8 || password.Length > 1024) throw new InvalidDataException("Мастер-пароль должен содержать от 8 до 1024 символов.");
     }
 
     private static void ValidateAccounts(PortableAccount[] accounts)

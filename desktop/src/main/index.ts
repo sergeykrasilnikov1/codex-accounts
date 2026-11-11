@@ -1,4 +1,4 @@
-import { app, BrowserWindow, nativeImage, nativeTheme, shell } from 'electron'
+import { app, BrowserWindow, nativeImage, nativeTheme, screen, shell } from 'electron'
 import electronUpdater from 'electron-updater'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
@@ -18,6 +18,7 @@ const { autoUpdater } = electronUpdater
 const isE2E = process.env.CODEX_SWITCHER_E2E === '1'
 configureE2EUpdateFeed(autoUpdater, isE2E, process.env.CODEX_SWITCHER_E2E_UPDATE_URL)
 let mainWindow: BrowserWindow | null = null
+let trayWindow: BrowserWindow | null = null
 let accountTray: AccountTray | null = null
 let quitting = false
 const backend = new BackendClient()
@@ -88,6 +89,29 @@ async function createMainWindow(): Promise<void> {
   })
 }
 
+async function createTrayWindow(): Promise<void> {
+  if (trayWindow) { trayWindow.show(); trayWindow.focus(); return }
+  const bounds = accountTray!.tray.getBounds()
+  const area = screen.getDisplayNearestPoint({ x: bounds.x, y: bounds.y }).workArea
+  const width = Math.min(600, area.width)
+  const height = Math.min(580, area.height)
+  const popup = new BrowserWindow({
+    ...createWindowOptions(join(currentDirectory, '../preload/index.cjs')),
+    width, height, minWidth: 320, minHeight: 200, frame: false, resizable: false,
+    skipTaskbar: true, alwaysOnTop: true, icon: applicationIcon,
+    x: Math.max(area.x, Math.min(bounds.x + bounds.width - width, area.x + area.width - width)),
+    y: Math.max(area.y, Math.min(bounds.y - height, area.y + area.height - height)),
+    webPreferences: { ...createWindowOptions(join(currentDirectory, '../preload/index.cjs')).webPreferences, additionalArguments: ['--tray-popup'] }
+  })
+  trayWindow = popup
+  popup.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
+  popup.webContents.on('will-navigate', event => event.preventDefault())
+  popup.once('ready-to-show', () => { popup.show(); popup.focus() })
+  popup.on('closed', () => { trayWindow = null })
+  if (!app.isPackaged && process.env.ELECTRON_RENDERER_URL) await popup.loadURL(rendererEntry())
+  else await popup.loadFile(join(currentDirectory, '../renderer/index.html'))
+}
+
 const hasLock = isE2E || app.requestSingleInstanceLock()
 if (!hasLock) {
   app.quit()
@@ -98,13 +122,14 @@ if (!hasLock) {
   })
 
   app.whenReady().then(async () => {
-    registerIpc(backend, updates, rendererEntry())
+    registerIpc(backend, updates, rendererEntry(), () => { void createMainWindow() })
     if (isE2E) {
       await createMainWindow()
       return
     }
     accountTray = new AccountTray(backend, applicationIcon,
-      () => { void createMainWindow() }, () => app.quit())
+      () => { void createMainWindow() }, () => app.quit(), process.platform,
+      process.platform === 'win32' ? () => { void createTrayWindow() } : undefined)
     if (process.argv.includes('--manage')) await createMainWindow()
   })
   app.on('activate', () => {

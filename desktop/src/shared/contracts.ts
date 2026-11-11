@@ -1,5 +1,6 @@
 export const backendCommands = [
   'bootstrap',
+  'openManagement',
   'driveStatus',
   'driveConnect',
   'driveDisconnect',
@@ -129,6 +130,7 @@ export interface UpdateApi {
 }
 
 export interface DesktopApi {
+  trayPopup?: boolean
   invoke<T>(command: BackendCommand, payload?: unknown): Promise<BridgeResponse<T>>
   selectCodexHome(title?: string): Promise<string | null>
   updates: UpdateApi

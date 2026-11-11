@@ -11,6 +11,7 @@ import {
 } from '../shared/ipc'
 
 const api: DesktopApi = Object.freeze({
+  trayPopup: process.argv.includes('--tray-popup'),
   invoke: <T>(command: BackendCommand, payload?: unknown): Promise<BridgeResponse<T>> =>
     ipcRenderer.invoke(IPC_INVOKE, command, payload) as Promise<BridgeResponse<T>>,
   selectCodexHome: (title?: string) => ipcRenderer.invoke(IPC_SELECT_CODEX_HOME, title),
