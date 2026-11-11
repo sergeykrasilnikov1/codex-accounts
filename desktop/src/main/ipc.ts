@@ -1,4 +1,4 @@
-import { dialog, ipcMain, nativeTheme, type IpcMainInvokeEvent } from 'electron'
+import { dialog, ipcMain, nativeTheme, type IpcMainInvokeEvent, type WebContents } from 'electron'
 import { isBackendCommand, type DesktopApi } from '../shared/contracts'
 import {
   allowedIpcChannels,
@@ -24,7 +24,8 @@ function assertTrusted(event: IpcMainInvokeEvent, trustedEntryUrl: string): void
   }
 }
 
-export function registerIpc(backend: BackendClient, updates: UpdateManager, trustedEntryUrl: string, openManagement?: () => void): void {
+export function registerIpc(backend: BackendClient, updates: UpdateManager, trustedEntryUrl: string, openManagement?: () => void,
+  profilesListed?: (sender: WebContents, count: number) => void): void {
   const drive = new GoogleDrive()
   let driveBusy = false
   ipcMain.handle(IPC_INVOKE, async (event, command: unknown, payload?: unknown) => {
@@ -82,6 +83,9 @@ export function registerIpc(backend: BackendClient, updates: UpdateManager, trus
       payload = { path: selected.filePaths[0], password }
     }
     const response = await backend.invoke(command, payload)
+    if (command === 'listProfiles' && response.ok && Array.isArray(response.data)) {
+      profilesListed?.(event.sender, response.data.length)
+    }
     if (command === 'setTheme' && response.ok && payload && typeof payload === 'object' && 'theme' in payload) {
       const theme = (payload as { theme?: unknown }).theme
       if (theme === 'system' || theme === 'dark' || theme === 'light') {

@@ -122,7 +122,13 @@ if (!hasLock) {
   })
 
   app.whenReady().then(async () => {
-    registerIpc(backend, updates, rendererEntry(), () => { void createMainWindow() })
+    registerIpc(backend, updates, rendererEntry(), () => { void createMainWindow() }, (sender, count) => {
+      if (!trayWindow || trayWindow.webContents !== sender) return
+      const bounds = trayWindow.getBounds()
+      const area = screen.getDisplayMatching(bounds).workArea
+      const height = Math.min(area.height, 580, Math.max(280, 220 + count * 98))
+      trayWindow.setBounds({ height, y: Math.max(area.y, bounds.y + bounds.height - height) })
+    })
     if (isE2E) {
       await createMainWindow()
       return

@@ -24,6 +24,10 @@ try {
     await popup.locator('.tray-popup').waitFor()
     const fontSize = await popup.locator('.tray-popup').evaluate(element => getComputedStyle(element).fontSize)
     assert.ok(parseFloat(fontSize) >= 17)
+    const popupProfiles = await popup.evaluate(() => window.codexSwitcher.invoke('listProfiles'))
+    if (popupProfiles.ok && popupProfiles.data.length <= 2) {
+      assert.ok((await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].getBounds().height)) < 580)
+    }
     await popup.close()
   } else {
     await expect.poll(() => application.evaluate(({ app }) => {
