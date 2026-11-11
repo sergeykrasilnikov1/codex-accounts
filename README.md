@@ -1,93 +1,91 @@
-# Codex Account Switcher for Windows
+# Codex Accounts
 
-[![Latest release](https://img.shields.io/github/v/release/korsun009/codex-account-switcher?display_name=tag)](https://github.com/korsun009/codex-account-switcher/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/korsun009/codex-account-switcher/total)](https://github.com/korsun009/codex-account-switcher/releases)
-[![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4)](https://github.com/korsun009/codex-account-switcher/releases/latest)
-[![License: MIT](https://img.shields.io/github/license/korsun009/codex-account-switcher)](LICENSE)
+<p align="center"><img src="desktop/build/account-switcher.png" alt="Codex Accounts" width="144"></p>
 
-[Русский](docs/ru/README.md) | **English** | [中文](docs/zh/README.md)
+Компактный переключатель аккаунтов OpenAI Codex для Windows 10/11. Живёт в трее рядом с часами: нажмите на значок, выберите сохранённый аккаунт — приложение переключит вход и перезапустит Codex.
 
-Codex Account Switcher is an open-source Windows desktop app for safely switching between multiple OpenAI Codex accounts, viewing 5-hour and weekly usage limits, and controlling Codex from an optional Telegram bot. It keeps one shared Codex Home for chats, projects, MCP servers, plugins, skills, and settings while changing only the active sign-in.
+![Интерфейс Codex Accounts](docs/images/codex-accounts.png)
 
-![Codex Account Switcher 2.0 settings screen](docs/images/codex-account-switcher-v2-settings.png)
+## Возможности
 
-## Download v2.0.0
+- Список аккаунтов по нажатию на значок в трее, текущий аккаунт отмечен галочкой.
+- Переключение одним нажатием; повторные нажатия блокируются до завершения операции.
+- Большое окно открывается только через **Управление аккаунтами…**. Его закрытие оставляет приложение в трее.
+- Поддержка Codex из Microsoft Store и распакованной настольной версии.
+- Единая иконка с двумя карточками аккаунтов и стрелками: трей, интерфейс, исполняемые файлы и установщики.
+- Сохранение чатов, проектов, MCP, плагинов, skills и настроек в общем Codex Home.
+- Шифрование сохранённых данных входа через Windows DPAPI, резервное копирование и восстановление предыдущего входа при ошибке переключения.
+- Просмотр пятичасовых и недельных лимитов, резервные копии и дополнительные настройки в основном окне.
 
-Download assets from [GitHub Releases](https://github.com/korsun009/codex-account-switcher/releases/latest) and verify them with `SHA256SUMS.txt`.
+## Как пользоваться
 
-| Windows | Recommended auto-update installer | Architecture installer | MSI | Portable |
-| --- | --- | --- | --- | --- |
-| 10/11 x64 | `Codex-Account-Switcher-2.0.0-Setup.exe` | `Codex-Account-Switcher-2.0.0-x64-Setup.exe` | `Codex-Account-Switcher-2.0.0-x64-Setup.msi` | `Codex-Account-Switcher-2.0.0-x64-Portable.zip` |
-| 10/11 x86 | `Codex-Account-Switcher-2.0.0-Setup.exe` | `Codex-Account-Switcher-2.0.0-ia32-Setup.exe` | `Codex-Account-Switcher-2.0.0-ia32-Setup.msi` | `Codex-Account-Switcher-2.0.0-ia32-Portable.zip` |
+1. Запустите **Codex Accounts**. Если значок не виден, откройте область **˄** рядом с часами.
+2. Нажмите значок и выберите **Управление аккаунтами…**.
+3. Проверьте папку Codex Home, обычно `%USERPROFILE%\.codex`.
+4. Добавьте аккаунт, выполните вход в Codex и сохраните его в профиль через приложение.
+5. Для следующего входа нажмите значок в трее и выберите другой готовый аккаунт.
+6. Пункт **Выход** завершает переключатель.
 
-`ia32` is the Electron name for 32-bit x86 Windows. The self-contained builds do not require a separate .NET installation. macOS, Linux, Windows 8, and Windows 8.1 are not supported.
+Переключение закрывает и снова запускает Codex. Не нажимайте обычную кнопку выхода из Codex между сохранёнными профилями: она может отозвать токен входа. Аккаунты без готовых сохранённых данных видны в меню, но недоступны для переключения.
 
-> **Unsigned release:** v2.0.0 does not yet have an Authenticode Code Signing certificate. Windows may show an unknown-publisher or SmartScreen warning. SHA-256 checksums prove download integrity but do not replace a trusted publisher signature. This limitation is stated in the release notes and will be removed only after a trusted certificate is configured.
+## Распакованная версия Codex
 
-## Features
+Создайте файл `%APPDATA%\CodexAccountSwitcher\codex-executable.txt` с единственной строкой — абсолютным путём к настольному исполняемому файлу. Например:
 
-- Add, rename, remove, and switch Codex account profiles from a Russian, English, or Chinese interface.
-- Keep chats, projects, sessions, MCP servers, plugins, skills, and tool configuration shared in one `.codex` directory.
-- Encrypt saved profile credentials with Windows DPAPI for the current Windows user.
-- Validate `auth.json`, create an encrypted backup, and support rollback before replacing the live sign-in.
-- Show 5-hour and weekly Codex limits for all saved profiles without displaying bearer tokens.
-- Find and start Codex desktop processes from installed and packaged Windows locations.
-- Store app settings and profile metadata in a local SQLite database.
-- Check, download, and install stable updates through three separate user actions.
-- Provide an optional authenticated Remote API and a button-first Telegram control plane.
-- Support automatic, dark, gray, and light themes.
+```text
+C:\Apps\Codex\app\ChatGPT.exe
+```
 
-## Quick Start
+В распакованной Store-сборке основной файл может называться `ChatGPT.exe`; в других настольных сборках — `Codex.exe`. **Не указывайте `resources\codex.exe`: это CLI.** В выбранной папке должны быть `resources\app.asar` и `resources\codex.exe`.
 
-1. Install the recommended NSIS `.exe`, install the MSI, or unpack the portable ZIP.
-2. Open **Codex Account Switcher** and confirm the detected Codex Home folder.
-3. Select **Add account**, enter a display name, and open Codex from the guided flow.
-4. Sign in to the required account in Codex, return to the switcher, and save the sign-in.
-5. Use **Switch** on a profile card. Do not use the normal Codex logout button between saved profiles because logout can revoke the refresh token.
+Если задана переменная `CODEX_SWITCHER_DATA_DIR`, положите `codex-executable.txt` в указанную ею папку. После переноса Codex обновите путь. Удаление файла возвращает запуск Store-версии по AUMID.
 
-The NSIS installer is recommended because the in-app updater downloads that format. MSI and portable users can check for a release in the app, then update manually from GitHub Releases.
+## Сборка из исходников
 
-## Security Model
-
-- Only the live `auth.json` is switched. Shared Codex data is not copied per account.
-- Saved profile credentials and credential backups are encrypted as `auth.dpapi` with Windows DPAPI `CurrentUser`.
-- A legacy plaintext profile is migrated only after encrypted write, decrypt, validation, and byte comparison succeed; the legacy file is then deleted.
-- DPAPI files are bound to the Windows user profile. Do not sync or copy them to another PC as a credential-transfer mechanism. Profile names may appear on another synchronized PC, but encrypted sign-ins are not portable.
-- Tokens are never stored in SQLite, returned by the Remote API, or printed in the interface.
-- The app does not bypass subscriptions, rate limits, account controls, or OpenAI access rules.
-
-See [SECURITY.md](SECURITY.md) for reporting and deployment boundaries.
-
-## Telegram Remote Control
-
-The app includes a sanitized direct-bot template in [`integrations/telegram-bot`](integrations/telegram-bot). A separate deployment repository, [codex-telegram-remote](https://github.com/korsun009/codex-telegram-remote), contains the recommended VPS bot, LAN gateway, reverse SSH tunnel, and systemd units.
-
-Available buttons cover PC status and Wake-on-LAN, accounts and limits, Codex start/stop, V2RayTun status/start/Proxy Mode/restart, sleep, reboot, and shutdown. Power actions require a short-lived one-time confirmation. The bot reads account names and limits from the current desktop API, so account additions and removals stay synchronized.
-
-Use [the GUI and Telegram setup guide](docs/TELEGRAM_GUI_SETUP.md) and [Remote API reference](docs/REMOTE_API.md). Never expose the Windows Remote API directly to the public internet.
-
-## Updates
-
-The app checks the stable GitHub `latest` channel only after the user presses **Check for updates**. A found update is downloaded only after a second action and installed only after a third action. Publishing `latest.yml`, both NSIS blockmaps, and the matching installers is part of every release gate.
-
-## Community Translations
-
-Community translations are welcome. Fork the repository, edit the language entries in [`desktop/src/renderer/src/locales/translations.json`](desktop/src/renderer/src/locales/translations.json), keep the key structure and `{{placeholders}}` aligned with Russian, run the validation commands, and open a pull request. The complete workflow is in [docs/TRANSLATIONS.md](docs/TRANSLATIONS.md).
-
-## Build and Test
-
-Requirements: Windows 10/11, PowerShell 7.4+, Node.js 22+, pnpm 11+, and .NET 8 SDK.
+Нужны Windows 10/11, .NET 8 SDK, Node.js 22.12+ и pnpm 11. Исходники и документация доступны в [публичном репозитории](https://github.com/sergeykrasilnikov1/codex-accounts). Наличие готовых пакетов проверяйте в [Releases](https://github.com/sergeykrasilnikov1/codex-accounts/releases).
 
 ```powershell
-dotnet test .\codex-account-switcher\CodexAccountSwitcher.sln --configuration Release
-Push-Location .\desktop
+git clone https://github.com/sergeykrasilnikov1/codex-accounts.git
+cd codex-accounts
+
+dotnet test .\codex-account-switcher\CodexAccountSwitcher.Tests\CodexAccountSwitcher.Tests.csproj -c Release
+dotnet publish .\codex-account-switcher\codex-account-switcher.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o .\artifacts\backend\x64
+
+cd desktop
 pnpm install --frozen-lockfile
 pnpm typecheck
 pnpm test
-Pop-Location
-pwsh -File .\scripts\build-release.ps1
+pnpm build
+$env:CODEX_SWITCHER_BACKEND = (Resolve-Path ..\artifacts\backend\x64\CodexAccountSwitcher.exe).Path
+pnpm dev
 ```
 
-The production build rejects unsigned executables by default. `-AllowUnsigned` is reserved for explicit local candidates and does not make them signed.
+Для локального x64-установщика после публикации backend:
 
-See [CONTRIBUTING.md](CONTRIBUTING.md), [v2.0.0 release notes](docs/RELEASE_NOTES_2.0.0.md), and the [MIT license](LICENSE).
+```powershell
+# Из папки desktop
+pnpm exec electron-builder --win nsis --x64 --publish never
+```
+
+Полная матрица x64/x86, NSIS/MSI/portable и SHA-256 собирается через `scripts/build-release.ps1`. Скрипт требует действительные цифровые подписи; `-AllowUnsigned` допускает неподписанную локальную сборку, не делая её подписанной. Для публикации подписанных пакетов нужен собственный сертификат. Обновления направлены на этот репозиторий и выполняются только по отдельным действиям пользователя: проверка, скачивание, установка.
+
+## Данные и безопасность
+
+- Репозиторий содержит исходники и публичные изображения. Личные аккаунты, `auth.json`, токены, базы SQLite и резервные копии в Git не добавляются.
+- Сохранённые входы и их резервные копии защищены DPAPI текущего пользователя Windows. Не переносите их на другой компьютер как способ переноса входа.
+- Сохраняются прежние технические имена папок `CodexAccountSwitcher` и `codex-account-switcher-desktop`, идентификаторы установки и имя backend `CodexAccountSwitcher.exe`: это обеспечивает совместимость с существующими данными.
+- Приложение переключает `auth.json`, а не копирует чаты и проекты между аккаунтами. Оно не обходит подписки или ограничения сервиса.
+- Дополнительный Remote API и Telegram-интеграция унаследованы от исходного проекта. Не открывайте Remote API напрямую в интернет. См. [SECURITY.md](SECURITY.md) и [документацию API](docs/REMOTE_API.md).
+
+## Проверки
+
+- Backend: `dotnet test ...` — проверка переключения, резервных копий, DPAPI, обнаружения процессов и поддержки распакованного Codex.
+- Интерфейс: `pnpm typecheck` и `pnpm test` — типы, контракты, единый брендинг, меню трея, блокировка повторных переключений и обработка ошибок.
+- Проверка установленного приложения без смены аккаунта: `node tests/e2e/tray-smoke.mjs "C:\Path\Codex Accounts.exe"` из папки `desktop`. Перед запуском закройте работающий переключатель. Проверка читает список профилей, открывает и закрывает окно управления, но не переключает аккаунты.
+- `scripts/security/audit-release.ps1` проверяет имена файлов и секреты через Gitleaks. Материалы в `docs/testing` описывают исторические проверки исходного проекта и не заменяют проверку этой версии.
+
+## Происхождение и лицензия
+
+Codex Accounts основан на [korsun009/codex-account-switcher](https://github.com/korsun009/codex-account-switcher) под лицензией MIT. Сохранены история разработки и авторское уведомление исходного проекта. В этой версии добавлены режим трея, поддержка распакованного Codex, новая иконка, название и отдельный источник обновлений.
+
+[MIT License](LICENSE). Это независимый проект, не официальный продукт OpenAI.

@@ -13,7 +13,7 @@ $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $release = Join-Path (Resolve-Path -LiteralPath $StageRoot).Path "desktop\release"
 $unpackedName = if ($Architecture -eq "x64") { "win-unpacked" } else { "win-ia32-unpacked" }
 $unpacked = Join-Path $release $unpackedName
-$application = Join-Path $unpacked "Codex Account Switcher.exe"
+$application = Join-Path $unpacked "Codex Accounts.exe"
 if (-not (Test-Path -LiteralPath $application)) {
     throw "Portable application is missing: $application"
 }

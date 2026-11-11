@@ -9,7 +9,7 @@ export function createWindowOptions(preloadPath: string, backgroundColor = '#0d0
     show: false,
     autoHideMenuBar: true,
     backgroundColor,
-    title: 'Codex Account Switcher',
+    title: 'Codex Accounts',
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,

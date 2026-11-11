@@ -38,9 +38,9 @@ try {
     $install = Start-Process -FilePath $installer -ArgumentList @("/S", "/D=$target") -PassThru -Wait -WindowStyle Hidden
     if ($install.ExitCode -ne 0) { throw "Installer failed with exit code $($install.ExitCode)." }
 
-    $application = Join-Path $target "Codex Account Switcher.exe"
+    $application = Join-Path $target "Codex Accounts.exe"
     $backend = Join-Path $target "resources\backend\CodexAccountSwitcher.exe"
-    $uninstaller = Join-Path $target "Uninstall Codex Account Switcher.exe"
+    $uninstaller = Join-Path $target "Uninstall Codex Accounts.exe"
     foreach ($required in @($application, $backend, $uninstaller)) {
         if (-not (Test-Path -LiteralPath $required)) { throw "Installed file is missing: $required" }
     }
@@ -122,7 +122,7 @@ try {
     Get-CimInstance Win32_Process |
         Where-Object { $_.ExecutablePath -like "$target\*" } |
         ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
-    $remainingUninstaller = Join-Path $target "Uninstall Codex Account Switcher.exe"
+    $remainingUninstaller = Join-Path $target "Uninstall Codex Accounts.exe"
     if (Test-Path -LiteralPath $remainingUninstaller) {
         $cleanup = Start-Process -FilePath $remainingUninstaller -ArgumentList "/S" -PassThru -Wait -WindowStyle Hidden
         if ($cleanup.ExitCode -ne 0) { Write-Warning "Cleanup uninstaller returned $($cleanup.ExitCode)." }

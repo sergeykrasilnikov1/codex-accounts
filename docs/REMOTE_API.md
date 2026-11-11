@@ -1,6 +1,6 @@
 # Codex Remote API
 
-Codex Account Switcher can run a small local HTTP API for remote control scenarios.
+Codex Accounts can run a small local HTTP API for remote control scenarios.
 The API is optional. The normal desktop app still starts without it.
 
 Start API mode with:

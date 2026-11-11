@@ -41,7 +41,7 @@ try {
         UserDataPreserved = $true
     } | ConvertTo-Json
 } finally {
-    $uninstaller = Join-Path $target "Uninstall Codex Account Switcher.exe"
+    $uninstaller = Join-Path $target "Uninstall Codex Accounts.exe"
     if (Test-Path -LiteralPath $uninstaller) {
         $process = Start-Process -FilePath $uninstaller -ArgumentList "/S" -PassThru -Wait -WindowStyle Hidden
         if ($process.ExitCode -ne 0) { Write-Warning "Test uninstaller returned $($process.ExitCode)." }

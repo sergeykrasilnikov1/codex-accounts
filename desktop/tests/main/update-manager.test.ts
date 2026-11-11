@@ -123,7 +123,7 @@ describe('UpdateManager', () => {
 
     await manager.openRelease()
 
-    expect(OFFICIAL_RELEASES_URL).toBe('https://github.com/korsun009/codex-account-switcher/releases')
+    expect(OFFICIAL_RELEASES_URL).toBe('https://github.com/sergeykrasilnikov1/codex-accounts/releases')
     expect(openExternal).toHaveBeenCalledOnce()
     expect(openExternal).toHaveBeenCalledWith(OFFICIAL_RELEASES_URL)
     expect(updater.downloadUpdate).not.toHaveBeenCalled()

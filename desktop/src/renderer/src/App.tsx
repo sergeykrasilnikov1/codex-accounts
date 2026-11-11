@@ -338,7 +338,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand"><div className="brand__mark"><img src={logoUrl} alt={t('brand.logoAlt')} /></div><div><strong>Codex</strong><span>Account Switcher</span></div></div>
+        <div className="brand"><div className="brand__mark"><img src={logoUrl} alt={t('brand.logoAlt')} /></div><div><strong>Codex</strong><span>Accounts</span></div></div>
         <nav aria-label={t('nav.ariaLabel')}>
           {navigation.map(({ id, label, icon: Icon }) => (
             <button key={id} aria-current={page === id ? 'page' : undefined} className={page === id ? 'nav-item is-active' : 'nav-item'} onClick={() => setPage(id)}>

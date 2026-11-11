@@ -1,4 +1,4 @@
-import { app, BrowserWindow, nativeTheme, shell } from 'electron'
+import { app, BrowserWindow, nativeImage, nativeTheme, shell } from 'electron'
 import electronUpdater from 'electron-updater'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
@@ -8,13 +8,19 @@ import { registerIpc, unregisterIpc } from './ipc'
 import { UpdateManager } from './update-manager'
 import { configureE2EUpdateFeed } from './update-feed'
 import { createWindowOptions } from './window-security'
+import { AccountTray } from './account-tray'
+import iconPath from '../../build/icon.ico?asset'
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url))
+const applicationIcon = nativeImage.createFromPath(iconPath)
 const { autoUpdater } = electronUpdater
 const isE2E = process.env.CODEX_SWITCHER_E2E === '1'
 configureE2EUpdateFeed(autoUpdater, isE2E, process.env.CODEX_SWITCHER_E2E_UPDATE_URL)
 let mainWindow: BrowserWindow | null = null
+let accountTray: AccountTray | null = null
 const backend = new BackendClient()
+// Keep existing desktop preferences when upgrading from the original product name.
+app.setPath('userData', join(app.getPath('appData'), 'codex-account-switcher-desktop'))
 const updates = new UpdateManager({
   isPackaged: app.isPackaged,
   currentVersion: app.getVersion(),
@@ -34,13 +40,23 @@ function rendererEntry(): string {
 }
 
 async function createMainWindow(): Promise<void> {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.show()
+    mainWindow.focus()
+    mainWindow.webContents.reload()
+    return
+  }
   const entry = rendererEntry()
   const preload = join(currentDirectory, '../preload/index.cjs')
   nativeTheme.themeSource = 'system'
-  mainWindow = new BrowserWindow(createWindowOptions(preload, nativeTheme.shouldUseDarkColors ? '#0d0f0e' : '#f3f5f2'))
+  mainWindow = new BrowserWindow({
+    ...createWindowOptions(preload, nativeTheme.shouldUseDarkColors ? '#0d0f0e' : '#f3f5f2'),
+    icon: applicationIcon
+  })
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('https://github.com/korsun009/codex-account-switcher')) {
+    if (url.startsWith('https://github.com/sergeykrasilnikov1/codex-accounts')) {
       void shell.openExternal(url)
     }
     return { action: 'deny' }
@@ -55,7 +71,6 @@ async function createMainWindow(): Promise<void> {
     mainWindow = null
   })
 
-  registerIpc(backend, updates, entry)
   if (!app.isPackaged && process.env.ELECTRON_RENDERER_URL) {
     await mainWindow.loadURL(entry)
   } else {
@@ -75,17 +90,18 @@ if (!hasLock) {
   app.quit()
 } else {
   app.on('second-instance', () => {
-    if (!mainWindow) {
-      return
-    }
-    if (mainWindow.isMinimized()) {
-      mainWindow.restore()
-    }
-    mainWindow.show()
-    mainWindow.focus()
+    void accountTray?.open()
   })
 
-  app.whenReady().then(createMainWindow)
+  app.whenReady().then(async () => {
+    registerIpc(backend, updates, rendererEntry())
+    if (isE2E) {
+      await createMainWindow()
+      return
+    }
+    accountTray = new AccountTray(backend, applicationIcon,
+      () => { void createMainWindow() }, () => app.quit())
+  })
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       void createMainWindow()
@@ -94,8 +110,11 @@ if (!hasLock) {
 }
 
 app.on('before-quit', () => {
+  accountTray?.tray.destroy()
   unregisterIpc()
   backend.dispose()
 })
 
-app.on('window-all-closed', () => app.quit())
+app.on('window-all-closed', () => {
+  if (isE2E) app.quit()
+})

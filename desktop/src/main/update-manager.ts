@@ -1,6 +1,6 @@
 import type { UpdateState } from '../shared/contracts'
 
-export const OFFICIAL_RELEASES_URL = 'https://github.com/korsun009/codex-account-switcher/releases'
+export const OFFICIAL_RELEASES_URL = 'https://github.com/sergeykrasilnikov1/codex-accounts/releases'
 const UPDATE_CHANNEL = 'latest'
 
 export interface SafeAutoUpdater {

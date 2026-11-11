@@ -12,8 +12,8 @@ public sealed class CodexProcessServiceTests
     {
         var processes = CurrentTopology();
 
-        var storeProcesses = CodexProcessLocator.FindStoreCodexProcesses(processes);
-        var roots = CodexProcessLocator.FindStoreCodexRoots(processes);
+        var storeProcesses = CodexProcessLocator.FindCodexProcesses(processes);
+        var roots = CodexProcessLocator.FindCodexRoots(processes);
 
         Assert.Equal([100, 101, 102, 103], storeProcesses.Select(process => process.ProcessId));
         Assert.Equal([100], roots.Select(process => process.ProcessId));
@@ -28,8 +28,8 @@ public sealed class CodexProcessServiceTests
             Process(201, 200, "ChatGPT", @"C:\Program Files\WindowsApps\OpenAI.ChatGPT-Desktop_1.0.0.0_x64__2p2nqsd0c76g0\app\ChatGPT.exe")
         };
 
-        Assert.Empty(CodexProcessLocator.FindStoreCodexProcesses(processes));
-        Assert.Empty(CodexProcessLocator.FindStoreCodexRoots(processes));
+        Assert.Empty(CodexProcessLocator.FindCodexProcesses(processes));
+        Assert.Empty(CodexProcessLocator.FindCodexRoots(processes));
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public sealed class CodexProcessServiceTests
             Process(301, 31, "codex", @"C:\Users\test\.vscode\extensions\openai.chatgpt-1.2.3\bin\windows-x86_64\codex.exe")
         };
 
-        Assert.Empty(CodexProcessLocator.FindStoreCodexProcesses(processes));
+        Assert.Empty(CodexProcessLocator.FindCodexProcesses(processes));
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public sealed class CodexProcessServiceTests
             new StartAppEntry("Another Codex", "Example.Codex_123!App")
         ]);
         var activator = new RecordingAppActivator();
-        var launcher = new WindowsCodexAppLauncher(startApps, activator);
+        var launcher = new WindowsCodexAppLauncher(startApps, activator, () => null);
 
         await launcher.LaunchAsync(CancellationToken.None);
 

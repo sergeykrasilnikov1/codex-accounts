@@ -99,11 +99,11 @@ try {
 
 $stageRelease = Join-Path $desktopStage "release"
 $requiredPackages = @(
-    "Codex-Account-Switcher-2.0.0-Setup.exe",
-    "Codex-Account-Switcher-2.0.0-x64-Setup.exe",
-    "Codex-Account-Switcher-2.0.0-ia32-Setup.exe",
-    "Codex-Account-Switcher-2.0.0-x64-Setup.msi",
-    "Codex-Account-Switcher-2.0.0-ia32-Setup.msi"
+    "Codex-Accounts-2.1.0-Setup.exe",
+    "Codex-Accounts-2.1.0-x64-Setup.exe",
+    "Codex-Accounts-2.1.0-ia32-Setup.exe",
+    "Codex-Accounts-2.1.0-x64-Setup.msi",
+    "Codex-Accounts-2.1.0-ia32-Setup.msi"
 )
 foreach ($name in $requiredPackages) {
     if (-not (Test-Path -LiteralPath (Join-Path $stageRelease $name))) {
@@ -116,11 +116,11 @@ $unpackedByArchitecture = [ordered]@{
     ia32 = Join-Path $stageRelease "win-ia32-unpacked"
 }
 foreach ($entry in $unpackedByArchitecture.GetEnumerator()) {
-    $executable = Join-Path $entry.Value "Codex Account Switcher.exe"
+    $executable = Join-Path $entry.Value "Codex Accounts.exe"
     if (-not (Test-Path -LiteralPath $executable)) {
         throw "Packaged application executable was not produced for $($entry.Key)."
     }
-    $zipPath = Join-Path $stageRelease "Codex-Account-Switcher-2.0.0-$($entry.Key)-Portable.zip"
+    $zipPath = Join-Path $stageRelease "Codex-Accounts-2.1.0-$($entry.Key)-Portable.zip"
     Compress-Archive -Path (Join-Path $entry.Value "*") -DestinationPath $zipPath -CompressionLevel Optimal -Force
 }
 
@@ -129,9 +129,9 @@ if (-not (Test-Path -LiteralPath $updateMetadata)) {
     throw "Updater metadata latest.yml was not produced."
 }
 $requiredBlockMaps = @(
-    "Codex-Account-Switcher-2.0.0-Setup.exe.blockmap",
-    "Codex-Account-Switcher-2.0.0-x64-Setup.exe.blockmap",
-    "Codex-Account-Switcher-2.0.0-ia32-Setup.exe.blockmap"
+    "Codex-Accounts-2.1.0-Setup.exe.blockmap",
+    "Codex-Accounts-2.1.0-x64-Setup.exe.blockmap",
+    "Codex-Accounts-2.1.0-ia32-Setup.exe.blockmap"
 )
 foreach ($name in $requiredBlockMaps) {
     if (-not (Test-Path -LiteralPath (Join-Path $stageRelease $name))) {
@@ -163,10 +163,10 @@ if ($invalidSignatures.Count -gt 0 -and -not $AllowUnsigned) {
 $output = Join-Path $desktopSource "release"
 New-Item -ItemType Directory -Path $output -Force | Out-Null
 $knownReleasePatterns = @(
-    "Codex-Account-Switcher-*-Setup.exe",
-    "Codex-Account-Switcher-*-Setup.exe.blockmap",
-    "Codex-Account-Switcher-*-Setup.msi",
-    "Codex-Account-Switcher-*-Portable.zip",
+    "Codex-Accounts-*-Setup.exe",
+    "Codex-Accounts-*-Setup.exe.blockmap",
+    "Codex-Accounts-*-Setup.msi",
+    "Codex-Accounts-*-Portable.zip",
     "latest.yml",
     "SHA256SUMS.txt"
 )
@@ -175,8 +175,8 @@ foreach ($pattern in $knownReleasePatterns) {
 }
 
 $releaseAssetNames = @($requiredPackages) + @($requiredBlockMaps) + @(
-    "Codex-Account-Switcher-2.0.0-x64-Portable.zip",
-    "Codex-Account-Switcher-2.0.0-ia32-Portable.zip",
+    "Codex-Accounts-2.1.0-x64-Portable.zip",
+    "Codex-Accounts-2.1.0-ia32-Portable.zip",
     "latest.yml"
 )
 $publishedAssets = @()

@@ -146,7 +146,7 @@ describe('App', () => {
   it('uses the supplied program logo instead of a text placeholder', async () => {
     render(<App />)
 
-    const logo = await screen.findByRole('img', { name: 'Codex Account Switcher' })
+    const logo = await screen.findByRole('img', { name: 'Codex Accounts' })
     expect(logo).toHaveAttribute('src', expect.stringMatching(/logo/i))
     expect(document.querySelector('.brand__mark')).not.toHaveTextContent(/^C$/)
   })

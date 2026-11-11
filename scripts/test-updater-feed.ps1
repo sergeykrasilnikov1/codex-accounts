@@ -14,9 +14,9 @@ $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $desktop = Join-Path $root "desktop"
 $stage = (Resolve-Path -LiteralPath $StageRoot).Path
 $release = Join-Path $stage "desktop\release"
-$application = Join-Path $release "win-unpacked\Codex Account Switcher.exe"
+$application = Join-Path $release "win-unpacked\Codex Accounts.exe"
 $metadata = Join-Path $release "latest.yml"
-$installer = Get-Item -LiteralPath (Join-Path $release "Codex-Account-Switcher-2.0.0-Setup.exe") -ErrorAction SilentlyContinue
+$installer = Get-Item -LiteralPath (Join-Path $release "Codex-Accounts-2.1.0-Setup.exe") -ErrorAction SilentlyContinue
 if (-not (Test-Path -LiteralPath $application) -or -not (Test-Path -LiteralPath $metadata) -or $null -eq $installer) {
     throw "Packaged application, latest.yml, or installer is missing under $release"
 }
@@ -34,7 +34,7 @@ $server = $null
 New-Item -ItemType Directory -Path $feed, $userData, $backendData, $codexHome -Force | Out-Null
 Set-Content -LiteralPath (Join-Path $codexHome "config.toml") -Value 'model = "test"' -Encoding UTF8
 Get-ChildItem -LiteralPath $release -File |
-    Where-Object { $_.Name -like "Codex-Account-Switcher-*-Setup.exe" -or $_.Name -like "Codex-Account-Switcher-*-Setup.exe.blockmap" } |
+    Where-Object { $_.Name -like "Codex-Accounts-*-Setup.exe" -or $_.Name -like "Codex-Accounts-*-Setup.exe.blockmap" } |
     Copy-Item -Destination $feed -Force
 $feedMetadata = (Get-Content -Raw -LiteralPath $metadata) -replace '(?m)^version:\s*.+$', "version: $SimulatedVersion"
 Set-Content -LiteralPath (Join-Path $feed "latest.yml") -Value $feedMetadata -Encoding UTF8
@@ -111,7 +111,7 @@ try {
 
     [pscustomobject]@{
         Result = "passed"
-        CurrentVersion = "2.0.0"
+        CurrentVersion = "2.1.0"
         AvailableVersion = $SimulatedVersion
         Feed = $feedUrl
         DownloadVerifiedBySha512 = $true

@@ -1,10 +1,10 @@
 # Contributing
 
-Contributions to Codex Account Switcher are welcome through GitHub pull requests.
+Contributions to Codex Accounts are welcome through GitHub pull requests.
 
 ## Before opening a pull request
 
-1. Fork `korsun009/codex-account-switcher` and create a focused branch.
+1. Fork `sergeykrasilnikov1/codex-accounts` and create a focused branch.
 2. Do not commit `.env`, `auth.json`, `auth.dpapi`, SQLite databases, logs, tokens, private hostnames, account IDs, or generated release files.
 3. Keep `C:\Users\<user>\.codex` as one shared Codex Home. Account switching must remain limited to the active sign-in unless an evidence-backed design explicitly changes that contract.
 4. Preserve the Electron `appId`, NSIS GUID, data directory, and uninstall retention behavior.

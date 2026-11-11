@@ -1,7 +1,7 @@
 {
   "ru": {
     "brand": {
-      "logoAlt": "Codex Account Switcher"
+      "logoAlt": "Codex Accounts"
     },
     "nav": {
       "ariaLabel": "Разделы",
@@ -178,7 +178,7 @@
   },
   "en": {
     "brand": {
-      "logoAlt": "Codex Account Switcher"
+      "logoAlt": "Codex Accounts"
     },
     "nav": {
       "ariaLabel": "Sections",
@@ -355,7 +355,7 @@
   },
   "zh": {
     "brand": {
-      "logoAlt": "Codex Account Switcher"
+      "logoAlt": "Codex Accounts"
     },
     "nav": {
       "ariaLabel": "部分",

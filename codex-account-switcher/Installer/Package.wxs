@@ -1,20 +1,20 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package
-    Name="Codex Account Switcher"
+    Name="Codex Accounts"
     Manufacturer="Korsun"
     Version="1.0.1.0"
     UpgradeCode="{43ACA8E6-AFE3-484D-952B-C548B82E097F}"
     Scope="perMachine"
     Compressed="yes">
 
-    <MajorUpgrade DowngradeErrorMessage="A newer version of Codex Account Switcher is already installed." />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Codex Accounts is already installed." />
     <MediaTemplate EmbedCab="yes" />
     <Icon Id="AppIcon.ico" SourceFile="$(var.AppIcon)" />
     <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
     <ui:WixUI Id="WixUI_Mondo" InstallDirectory="INSTALLFOLDER" />
 
     <StandardDirectory Id="ProgramFiles64Folder">
-      <Directory Id="INSTALLFOLDER" Name="Codex Account Switcher">
+      <Directory Id="INSTALLFOLDER" Name="Codex Accounts">
         <Component Id="MainExecutable" Guid="{CBA55559-5310-45FD-8065-32207E8ACFC0}">
           <File Id="CodexAccountSwitcherExe" Source="$(var.PublishDir)\CodexAccountSwitcher.exe" KeyPath="yes" />
         </Component>
@@ -22,11 +22,11 @@
     </StandardDirectory>
 
     <StandardDirectory Id="ProgramMenuFolder">
-      <Directory Id="ApplicationProgramsFolder" Name="Codex Account Switcher">
+      <Directory Id="ApplicationProgramsFolder" Name="Codex Accounts">
         <Component Id="StartMenuShortcut" Guid="{748396B8-C8FE-454A-915E-0DBFC4B0CBD9}">
           <Shortcut
             Id="ApplicationStartMenuShortcut"
-            Name="Codex Account Switcher"
+            Name="Codex Accounts"
             Description="Switch between local Codex account profiles"
             Target="[INSTALLFOLDER]CodexAccountSwitcher.exe"
             WorkingDirectory="INSTALLFOLDER"
@@ -41,7 +41,7 @@
       <Component Id="DesktopShortcut" Guid="{0D0C4632-5E4A-416F-98F8-7F0B39722363}">
         <Shortcut
           Id="ApplicationDesktopShortcut"
-          Name="Codex Account Switcher"
+          Name="Codex Accounts"
           Description="Switch between local Codex account profiles"
           Target="[INSTALLFOLDER]CodexAccountSwitcher.exe"
           WorkingDirectory="INSTALLFOLDER"
@@ -50,7 +50,7 @@
       </Component>
     </StandardDirectory>
 
-    <Feature Id="MainFeature" Title="Codex Account Switcher" Level="1">
+    <Feature Id="MainFeature" Title="Codex Accounts" Level="1">
       <ComponentRef Id="MainExecutable" />
       <ComponentRef Id="StartMenuShortcut" />
       <Feature Id="DesktopShortcutFeature" Title="Desktop shortcut" Description="Create a desktop shortcut." Level="1">

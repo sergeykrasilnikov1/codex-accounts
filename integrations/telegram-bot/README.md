@@ -1,6 +1,6 @@
 # Telegram integration template
 
-This optional bot controls Codex Account Switcher Remote API through buttons. It contains no deployment-specific host, IP, MAC, Telegram account ID, token, SSH key, or server name.
+This optional bot controls Codex Accounts Remote API through buttons. It contains no deployment-specific host, IP, MAC, Telegram account ID, token, SSH key, or server name.
 
 ## Security model
 

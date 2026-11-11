@@ -17,9 +17,9 @@ public sealed class LocalizationTests
     [Fact]
     public void LocalizerProvidesThreeUiLanguages()
     {
-        Assert.Equal("Аккаунты Codex", Localizer.Get(AppLanguage.Russian, "app.title"));
+        Assert.Equal("Codex Accounts", Localizer.Get(AppLanguage.Russian, "app.title"));
         Assert.Equal("Codex Accounts", Localizer.Get(AppLanguage.English, "app.title"));
-        Assert.Equal("Codex 账号", Localizer.Get(AppLanguage.Chinese, "app.title"));
+        Assert.Equal("Codex Accounts", Localizer.Get(AppLanguage.Chinese, "app.title"));
     }
 
     [Fact]

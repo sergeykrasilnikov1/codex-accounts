@@ -189,7 +189,8 @@ public sealed class WindowsProcessController : IProcessController
             }
 
             var currentPath = WindowsProcessInventory.TryGetExecutablePath(process.Id);
-            if (!CodexProcessLocator.IsStoreCodexExecutablePath(currentPath)
+            if (!(CodexProcessLocator.IsStoreCodexExecutablePath(currentPath)
+                    || PortableCodex.MatchesExecutable(currentPath, PortableCodex.ReadExecutablePath()))
                 || !string.Equals(currentPath, expected.ExecutablePath, StringComparison.OrdinalIgnoreCase))
             {
                 process.Dispose();

@@ -69,7 +69,7 @@ public static class Localizer
 
     private static readonly IReadOnlyDictionary<string, string> Russian = new Dictionary<string, string>
     {
-        ["app.title"] = "Аккаунты Codex",
+        ["app.title"] = "Codex Accounts",
         ["app.subtitle"] = "переключатель аккаунтов",
         ["menu.main"] = "Меню",
         ["menu.instructions"] = "Инструкция",
@@ -317,7 +317,7 @@ public static class Localizer
 
     private static readonly IReadOnlyDictionary<string, string> Chinese = new Dictionary<string, string>
     {
-        ["app.title"] = "Codex 账号",
+        ["app.title"] = "Codex Accounts",
         ["app.subtitle"] = "账号切换器",
         ["menu.main"] = "菜单",
         ["menu.instructions"] = "说明",

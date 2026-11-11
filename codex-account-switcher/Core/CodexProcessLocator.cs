@@ -29,11 +29,13 @@ public static class CodexProcessLocator
         return false;
     }
 
-    public static IReadOnlyList<ProcessInventoryEntry> FindStoreCodexProcesses(
-        IReadOnlyCollection<ProcessInventoryEntry> processes)
+    public static IReadOnlyList<ProcessInventoryEntry> FindCodexProcesses(
+        IReadOnlyCollection<ProcessInventoryEntry> processes, string? portablePath = null)
     {
+        portablePath ??= PortableCodex.ReadExecutablePath();
         var storeProcessIds = processes
-            .Where(process => IsStoreCodexExecutablePath(process.ExecutablePath))
+            .Where(process => IsStoreCodexExecutablePath(process.ExecutablePath)
+                || PortableCodex.MatchesExecutable(process.ExecutablePath, portablePath))
             .Select(process => process.ProcessId)
             .ToHashSet();
 
@@ -57,18 +59,19 @@ public static class CodexProcessLocator
             .ToArray();
     }
 
-    public static IReadOnlyList<ProcessInventoryEntry> FindStoreCodexRoots(
+    public static IReadOnlyList<ProcessInventoryEntry> FindCodexRoots(
         IReadOnlyCollection<ProcessInventoryEntry> processes)
     {
-        return FindTopLevelStoreCodexProcesses(processes)
-            .Where(process => NormalizeProcessName(process.ProcessName).Equals("ChatGPT", StringComparison.OrdinalIgnoreCase))
+        return FindTopLevelCodexProcesses(processes)
+            .Where(process => NormalizeProcessName(process.ProcessName).Equals("ChatGPT", StringComparison.OrdinalIgnoreCase)
+                || NormalizeProcessName(process.ProcessName).Equals("Codex", StringComparison.OrdinalIgnoreCase))
             .ToArray();
     }
 
-    public static IReadOnlyList<ProcessInventoryEntry> FindTopLevelStoreCodexProcesses(
+    public static IReadOnlyList<ProcessInventoryEntry> FindTopLevelCodexProcesses(
         IReadOnlyCollection<ProcessInventoryEntry> processes)
     {
-        var storeProcesses = FindStoreCodexProcesses(processes);
+        var storeProcesses = FindCodexProcesses(processes);
         var storeProcessIds = storeProcesses.Select(process => process.ProcessId).ToHashSet();
 
         return storeProcesses

@@ -41,7 +41,7 @@ public sealed class WindowsCodexProcessService : ICodexProcessService
 
     public IReadOnlyList<CodexProcessInfo> FindRunningCodexProcesses()
     {
-        return CodexProcessLocator.FindStoreCodexProcesses(_inventory.Capture())
+        return CodexProcessLocator.FindCodexProcesses(_inventory.Capture())
             .Select(process => new CodexProcessInfo(
                 process.ProcessName,
                 process.ProcessId,
@@ -52,7 +52,7 @@ public sealed class WindowsCodexProcessService : ICodexProcessService
     public async Task StopCodexAsync(TimeSpan timeout, CancellationToken cancellationToken)
     {
         var deadline = DateTimeOffset.UtcNow.Add(timeout);
-        foreach (var root in CodexProcessLocator.FindStoreCodexRoots(_inventory.Capture()))
+        foreach (var root in CodexProcessLocator.FindCodexRoots(_inventory.Capture()))
         {
             _controller.TryCloseMainWindow(root);
         }
@@ -63,10 +63,10 @@ public sealed class WindowsCodexProcessService : ICodexProcessService
         }
 
         var afterClose = _inventory.Capture();
-        var remainingRoots = CodexProcessLocator.FindStoreCodexRoots(afterClose);
-        if (remainingRoots.Count == 0 && CodexProcessLocator.FindStoreCodexProcesses(afterClose).Count > 0)
+        var remainingRoots = CodexProcessLocator.FindCodexRoots(afterClose);
+        if (remainingRoots.Count == 0 && CodexProcessLocator.FindCodexProcesses(afterClose).Count > 0)
         {
-            remainingRoots = CodexProcessLocator.FindTopLevelStoreCodexProcesses(afterClose);
+            remainingRoots = CodexProcessLocator.FindTopLevelCodexProcesses(afterClose);
         }
 
         foreach (var root in remainingRoots)
@@ -84,7 +84,7 @@ public sealed class WindowsCodexProcessService : ICodexProcessService
         while (DateTimeOffset.UtcNow < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (CodexProcessLocator.FindStoreCodexProcesses(_inventory.Capture()).Count == 0)
+            if (CodexProcessLocator.FindCodexProcesses(_inventory.Capture()).Count == 0)
             {
                 return;
             }

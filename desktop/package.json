@@ -1,13 +1,13 @@
 {
-  "name": "codex-account-switcher-desktop",
-  "version": "2.0.0",
-  "description": "Secure Windows account switcher for Codex",
+  "name": "codex-accounts-desktop",
+  "version": "2.1.0",
+  "description": "Codex Accounts — Windows tray account switcher",
   "main": "out/main/index.js",
-  "author": "Codex Account Switcher contributors",
+  "author": "Codex Accounts contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/korsun009/codex-account-switcher.git"
+    "url": "https://github.com/sergeykrasilnikov1/codex-accounts.git"
   },
   "type": "module",
   "packageManager": "pnpm@11.20.0",
@@ -50,7 +50,7 @@
   },
   "build": {
     "appId": "app.codexaccountswitcher.desktop",
-    "productName": "Codex Account Switcher",
+    "productName": "Codex Accounts",
     "asar": true,
     "directories": {
       "output": "release",
@@ -63,8 +63,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "korsun009",
-        "repo": "codex-account-switcher",
+        "owner": "sergeykrasilnikov1",
+        "repo": "codex-accounts",
         "channel": "latest",
         "releaseType": "release"
       }
@@ -102,7 +102,7 @@
           ]
         }
       ],
-      "artifactName": "Codex-Account-Switcher-${version}-${arch}-Setup.${ext}"
+      "artifactName": "Codex-Accounts-${version}-${arch}-Setup.${ext}"
     },
     "nsis": {
       "guid": "46496e38-c773-566c-b0c4-a8505306ddae",

@@ -21,7 +21,7 @@ describe('release configuration', () => {
   it('keeps the established installer identity for the stable release', () => {
     const config = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as PackageConfig
 
-    expect(config.version).toBe('2.0.0')
+    expect(config.version).toBe('2.1.0')
     expect(config.build.appId).toBe('app.codexaccountswitcher.desktop')
     // UUID v5 generated for the first Electron installer. Never change after publication.
     expect(config.build.nsis.guid).toBe('46496e38-c773-566c-b0c4-a8505306ddae')
@@ -29,7 +29,7 @@ describe('release configuration', () => {
     expect(config.build.win.signtoolOptions.signingHashAlgorithms).toEqual(['sha256'])
     expect(config.build.win.signtoolOptions.rfc3161TimeStampServer).toBe('http://timestamp.digicert.com')
     expect(config.build.publish).toEqual([
-      expect.objectContaining({ provider: 'github', channel: 'latest', releaseType: 'release' })
+      expect.objectContaining({ provider: 'github', owner: 'sergeykrasilnikov1', repo: 'codex-accounts', channel: 'latest', releaseType: 'release' })
     ])
   })
 

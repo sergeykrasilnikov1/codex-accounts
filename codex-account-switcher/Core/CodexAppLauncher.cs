@@ -37,20 +37,36 @@ public sealed class WindowsCodexAppLauncher : ICodexAppLauncher
 {
     private readonly IStartAppInventory _startAppInventory;
     private readonly IAppActivator _appActivator;
+    private readonly Func<string?> _portablePath;
 
     public WindowsCodexAppLauncher()
         : this(new PowerShellStartAppInventory(), new ExplorerAppActivator())
     {
     }
 
-    public WindowsCodexAppLauncher(IStartAppInventory startAppInventory, IAppActivator appActivator)
+    public WindowsCodexAppLauncher(IStartAppInventory startAppInventory, IAppActivator appActivator,
+        Func<string?>? portablePath = null)
     {
         _startAppInventory = startAppInventory ?? throw new ArgumentNullException(nameof(startAppInventory));
         _appActivator = appActivator ?? throw new ArgumentNullException(nameof(appActivator));
+        _portablePath = portablePath ?? (() => PortableCodex.ReadExecutablePath());
     }
 
     public async Task LaunchAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        var portablePath = _portablePath();
+        if (portablePath is not null)
+        {
+            _ = Process.Start(new ProcessStartInfo
+            {
+                FileName = portablePath,
+                WorkingDirectory = Path.GetDirectoryName(portablePath),
+                UseShellExecute = true
+            }) ?? throw new InvalidOperationException("Could not start portable Codex.");
+            return;
+        }
+
         var startApps = await _startAppInventory.GetStartAppsAsync(cancellationToken);
         var aumid = CodexAppIdentity.SelectExactAumid(startApps);
         if (aumid is null)
