@@ -1,0 +1,60 @@
+name: Ubuntu 24.04
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install desktop and keyring dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsecret-tools gnome-keyring dbus-x11 xvfb libgtk-3-0 libnss3 libasound2t64 libgbm1 libayatana-appindicator3-1
+          npm install -g pnpm@11.20.0
+      - name: Test encryption, keyring, file permissions and process isolation
+        run: |
+          dbus-run-session -- bash -euc '
+            printf "ci-only-password" | gnome-keyring-daemon --unlock --components=secrets
+            CODEX_ACCOUNTS_KEYRING_TEST=1 dotnet test linux-backend/tests/CodexAccounts.Linux.Tests.csproj -c Release
+          '
+      - name: Publish self-contained backend and test the real JSON bridge
+        run: |
+          dotnet publish linux-backend/CodexAccounts.Linux.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o artifacts/backend/linux-x64
+          python3 linux-backend/tests/bridge-smoke.py "$PWD/artifacts/backend/linux-x64/CodexAccountSwitcher"
+      - name: Install desktop dependencies
+        working-directory: desktop
+        run: pnpm install --frozen-lockfile
+      - name: Check desktop and build Ubuntu packages
+        working-directory: desktop
+        run: |
+          pnpm typecheck
+          pnpm test
+          pnpm package:ubuntu
+      - name: Test packaged tray and management window without switching accounts
+        working-directory: desktop
+        run: |
+          export CODEX_SWITCHER_DATA_DIR="$(mktemp -d)"
+          export CODEX_HOME="$CODEX_SWITCHER_DATA_DIR/.codex"
+          mkdir -p "$CODEX_HOME"
+          printf 'model = "demo"\n' > "$CODEX_HOME/config.toml"
+          dbus-run-session -- xvfb-run -a node tests/e2e/tray-smoke.mjs "$PWD/release/linux-unpacked/codex-accounts"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codex-accounts-ubuntu-x64
+          path: |
+            desktop/release/*.deb
+            desktop/release/*.AppImage
+          if-no-files-found: error

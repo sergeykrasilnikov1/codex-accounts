@@ -53,7 +53,7 @@ public sealed class DesktopBridgeServer
     {
         _database = database;
         _fileSystem = fileSystem ?? new RealFileSystem();
-        _processService = processService ?? new WindowsCodexProcessService();
+        _processService = processService ?? PlatformServices.CreateProcessService();
         _httpClientFactory = httpClientFactory ?? (() => new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
         {
             Timeout = TimeSpan.FromSeconds(10)
@@ -426,7 +426,7 @@ public sealed class DesktopBridgeServer
         return exception switch
         {
             JsonException => "Desktop request JSON is invalid.",
-            UnauthorizedAccessException => "Windows denied access to the requested operation.",
+            UnauthorizedAccessException => "The operating system denied access to the requested operation.",
             _ => exception.Message.Length > 500 ? exception.Message[..500] : exception.Message
         };
     }

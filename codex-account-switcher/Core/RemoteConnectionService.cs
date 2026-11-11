@@ -16,7 +16,7 @@ public sealed class RemoteConnectionService
     public RemoteConnectionService(SqliteAppDatabase database, ISecretProtector? secretProtector = null)
     {
         _database = database;
-        _secretProtector = secretProtector ?? new WindowsDpapiSecretProtector();
+        _secretProtector = secretProtector ?? PlatformServices.CreateSecretProtector();
     }
 
     public IReadOnlyList<RemoteConnectionSummary> List() => _database.ListRemoteConnections();

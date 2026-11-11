@@ -22,7 +22,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "package:dir": "pnpm build && electron-builder --dir --win --x64 --ia32 --publish never",
-    "package:win": "pnpm build && electron-builder --win nsis msi --x64 --ia32 --publish never"
+    "package:win": "pnpm build && electron-builder --win nsis msi --x64 --ia32 --publish never",
+    "package:ubuntu": "pnpm build && electron-builder --linux deb AppImage --x64 --publish never"
   },
   "dependencies": {
     "electron-updater": "6.8.9",
@@ -69,15 +70,6 @@
         "releaseType": "release"
       }
     ],
-    "extraResources": [
-      {
-        "from": "../artifacts/backend/${arch}",
-        "to": "backend",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
     "win": {
       "icon": "build/icon.ico",
       "signtoolOptions": {
@@ -102,7 +94,16 @@
           ]
         }
       ],
-      "artifactName": "Codex-Accounts-${version}-${arch}-Setup.${ext}"
+      "artifactName": "Codex-Accounts-${version}-${arch}-Setup.${ext}",
+      "extraResources": [
+        {
+          "from": "../artifacts/backend/${arch}",
+          "to": "backend",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ]
     },
     "nsis": {
       "guid": "46496e38-c773-566c-b0c4-a8505306ddae",
@@ -112,6 +113,42 @@
       "createStartMenuShortcut": true,
       "deleteAppDataOnUninstall": false,
       "runAfterFinish": true
+    },
+    "linux": {
+      "target": [
+        "deb",
+        "AppImage"
+      ],
+      "category": "Utility",
+      "icon": "build/account-switcher.png",
+      "artifactName": "Codex-Accounts-${version}-${arch}.${ext}",
+      "maintainer": "sergeykrasilnikov1",
+      "extraResources": [
+        {
+          "from": "../artifacts/backend/linux-${arch}",
+          "to": "backend",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ],
+      "executableName": "codex-accounts"
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libdrm2",
+        "libgbm1",
+        "libsecret-tools",
+        "gnome-keyring",
+        "libayatana-appindicator3-1"
+      ]
     }
   }
 }

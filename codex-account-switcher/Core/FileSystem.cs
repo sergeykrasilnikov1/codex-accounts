@@ -26,14 +26,18 @@ public sealed class RealFileSystem : IFileSystem
 
     public bool DirectoryExists(string path) => Directory.Exists(path);
 
-    public void CreateDirectory(string path) => Directory.CreateDirectory(path);
+    public void CreateDirectory(string path)
+    {
+        if (OperatingSystem.IsLinux()) Directory.CreateDirectory(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        else Directory.CreateDirectory(path);
+    }
 
     public void CopyFile(string sourcePath, string destinationPath, bool overwrite)
     {
         var parent = Path.GetDirectoryName(destinationPath);
         if (!string.IsNullOrWhiteSpace(parent))
         {
-            Directory.CreateDirectory(parent);
+            CreateDirectory(parent);
         }
 
         File.Copy(sourcePath, destinationPath, overwrite);
@@ -60,27 +64,29 @@ public sealed class RealFileSystem : IFileSystem
         var parent = Path.GetDirectoryName(path);
         if (!string.IsNullOrWhiteSpace(parent))
         {
-            Directory.CreateDirectory(parent);
+            CreateDirectory(parent);
         }
 
         var tempPath = path + ".tmp-" + Guid.NewGuid().ToString("N");
-        File.WriteAllBytes(tempPath, bytes);
-        ReplaceOrMove(tempPath, path);
+        try
+        {
+            var options = new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write };
+            if (OperatingSystem.IsLinux()) options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+            using (var stream = new FileStream(tempPath, options))
+            {
+                stream.Write(bytes);
+                stream.Flush(flushToDisk: true);
+            }
+            ReplaceOrMove(tempPath, path);
+        }
+        finally { if (File.Exists(tempPath)) File.Delete(tempPath); }
     }
 
     public byte[] ReadAllBytes(string path) => File.ReadAllBytes(path);
 
     public void WriteAllTextAtomic(string path, string text)
     {
-        var parent = Path.GetDirectoryName(path);
-        if (!string.IsNullOrWhiteSpace(parent))
-        {
-            Directory.CreateDirectory(parent);
-        }
-
-        var tempPath = path + ".tmp-" + Guid.NewGuid().ToString("N");
-        File.WriteAllText(tempPath, text, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-        ReplaceOrMove(tempPath, path);
+        WriteAllBytesAtomic(path, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false).GetBytes(text));
     }
 
     public string ReadAllText(string path) => File.ReadAllText(path, Encoding.UTF8);

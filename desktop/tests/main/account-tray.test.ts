@@ -6,7 +6,8 @@ import { AccountTray } from '../../src/main/account-tray'
 const mocks = vi.hoisted(() => ({
   menu: [] as MenuItemConstructorOptions[],
   error: vi.fn(),
-  tooltip: vi.fn()
+  tooltip: vi.fn(),
+  contextMenu: vi.fn()
 }))
 vi.mock('electron', () => ({
   dialog: { showErrorBox: mocks.error },
@@ -15,6 +16,7 @@ vi.mock('electron', () => ({
     setToolTip = mocks.tooltip
     on = vi.fn()
     popUpContextMenu = vi.fn()
+    setContextMenu = mocks.contextMenu
   }
 }))
 
@@ -37,6 +39,13 @@ function click(index: number): void {
 
 describe('account tray', () => {
   beforeEach(() => { vi.clearAllMocks(); mocks.menu = [] })
+
+  it('initializes a persistent native context menu for Ubuntu indicators', async () => {
+    const invoke = vi.fn().mockResolvedValue({ ok: true, data: profiles })
+    new AccountTray({ invoke } as unknown as BackendClient, {} as NativeImage, vi.fn(), vi.fn(), 'linux')
+    await vi.waitFor(() => expect(mocks.menu[0]).toMatchObject({ label: 'Первый', checked: true }))
+    expect(mocks.contextMenu).toHaveBeenCalledTimes(2)
+  })
 
   it('shows all accounts, marks the active account and disables unavailable sign-ins', async () => {
     const { tray, management, quit } = setup()

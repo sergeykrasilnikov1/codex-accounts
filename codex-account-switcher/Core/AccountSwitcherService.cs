@@ -26,13 +26,13 @@ public sealed class AccountSwitcherService
         _fileSystem = fileSystem;
         _processService = processService;
         _profileStore = profileStore;
-        _secretProtector = secretProtector ?? new WindowsDpapiSecretProtector();
+        _secretProtector = secretProtector ?? PlatformServices.CreateSecretProtector();
         _credentialStore = new ProfileCredentialStore(layout, fileSystem, _secretProtector);
     }
 
     public static AccountSwitcherService CreateDefault(CodexHomeLayout layout, IProfileStore? profileStore = null)
     {
-        return new AccountSwitcherService(layout, new RealFileSystem(), new WindowsCodexProcessService(), profileStore);
+        return new AccountSwitcherService(layout, new RealFileSystem(), PlatformServices.CreateProcessService(), profileStore);
     }
 
     private string ProfilesRegistryPath => Path.Combine(_layout.ProfilesDirectory, "profiles.json");

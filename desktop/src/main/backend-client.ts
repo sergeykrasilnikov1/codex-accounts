@@ -110,6 +110,6 @@ export class BackendClient {
     if (!app.isPackaged && override) {
       return override
     }
-    return join(process.resourcesPath, 'backend', 'CodexAccountSwitcher.exe')
+    return join(process.resourcesPath, 'backend', process.platform === 'win32' ? 'CodexAccountSwitcher.exe' : 'CodexAccountSwitcher')
   }
 }

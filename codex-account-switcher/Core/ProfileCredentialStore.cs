@@ -15,7 +15,7 @@ public sealed class ProfileCredentialStore
     {
         _layout = layout;
         _fileSystem = fileSystem;
-        _protector = protector ?? new WindowsDpapiSecretProtector();
+        _protector = protector ?? PlatformServices.CreateSecretProtector();
     }
 
     public bool HasCredentials(string profileName)
@@ -99,7 +99,7 @@ public sealed class ProfileCredentialStore
         catch (CryptographicException ex)
         {
             throw new InvalidDataException(
-                "Сохраненный вход не удалось расшифровать для текущего пользователя Windows.", ex);
+                "Сохраненный вход не удалось расшифровать для текущего пользователя и системного хранилища ключей.", ex);
         }
 
         AuthDocumentValidator.Validate(plaintext);

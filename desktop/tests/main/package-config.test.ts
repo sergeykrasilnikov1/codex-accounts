@@ -9,8 +9,8 @@ interface PackageConfig {
     appId: string
     nsis: { guid: string; deleteAppDataOnUninstall: boolean }
     publish: Array<{ provider: string; owner: string; repo: string; channel: string; releaseType: string }>
-    extraResources: Array<{ from: string; to: string }>
     win: {
+      extraResources: Array<{ from: string; to: string }>
       signtoolOptions: { signingHashAlgorithms: string[]; rfc3161TimeStampServer: string }
       target: Array<{ target: string; arch: string[] }>
     }
@@ -36,7 +36,7 @@ describe('release configuration', () => {
   it('packages the architecture-matched backend for every supported Windows format', () => {
     const config = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as PackageConfig
 
-    expect(config.build.extraResources).toContainEqual({
+    expect(config.build.win.extraResources).toContainEqual({
       from: '../artifacts/backend/${arch}',
       to: 'backend',
       filter: ['**/*']

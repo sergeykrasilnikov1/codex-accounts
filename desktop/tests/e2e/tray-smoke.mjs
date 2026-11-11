@@ -3,7 +3,9 @@ import { _electron, expect } from '@playwright/test'
 
 const executablePath = process.argv[2]
 assert.ok(executablePath, 'Pass the installed switcher executable path.')
-const application = await _electron.launch({ executablePath, env: { ...process.env, CODEX_SWITCHER_E2E: '0' } })
+const application = await _electron.launch({ executablePath,
+  args: process.platform === 'linux' ? ['--no-sandbox'] : [],
+  env: { ...process.env, CODEX_SWITCHER_E2E: '0' } })
 try {
   await application.evaluate(async ({ app }) => { await app.whenReady() })
   assert.equal(await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().length), 0,
@@ -13,10 +15,12 @@ try {
     Tray.prototype.popUpContextMenu = function (menu) {
       globalThis.traySmokeItems = menu.items.map(item => ({ label: item.label, checked: item.checked, enabled: item.enabled }))
     }
+    Tray.prototype.setContextMenu = Tray.prototype.popUpContextMenu
   })
   await expect.poll(() => application.evaluate(({ app }) => {
     app.emit('second-instance')
-    return globalThis.traySmokeItems
+    const items = globalThis.traySmokeItems
+    return items?.[0]?.label === 'Загрузка аккаунтов…' ? undefined : items
   }), { timeout: 30000 }).toBeDefined()
   const items = await application.evaluate(() => globalThis.traySmokeItems)
   assert.ok(items?.some(item => item.label === 'Управление аккаунтами…'), 'Tray menu was not created.')

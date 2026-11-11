@@ -62,7 +62,7 @@ internal static class Program
         var layout = CodexHomeLayout.FromHome(codexHome);
         database.SetSelectedCodexHome(codexHome);
 
-        var processService = new WindowsCodexProcessService();
+        var processService = PlatformServices.CreateProcessService();
         var switcher = new AccountSwitcherService(layout, new RealFileSystem(), processService, database);
         var options = RemoteApiOptions.FromEnvironment();
         var server = new RemoteApiServer(options, layout, switcher, processService, v2RayTunService: new V2RayTunService());

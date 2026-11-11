@@ -8,17 +8,32 @@ export class AccountTray {
   private switching = false
 
   constructor(private readonly backend: BackendClient, icon: NativeImage,
-    private readonly openManagement: () => void, private readonly quit: () => void) {
+    private readonly openManagement: () => void, private readonly quit: () => void,
+    private readonly platform: NodeJS.Platform = process.platform) {
     this.tray = new Tray(icon)
     this.tray.setToolTip('Codex Accounts')
     this.tray.on('click', () => { void this.open() })
     this.tray.on('right-click', () => { void this.open() })
+    if (this.platform === 'linux') {
+      this.showMenu([
+        { label: 'Загрузка аккаунтов…', enabled: false },
+        { label: 'Управление аккаунтами…', click: this.openManagement },
+        { label: 'Выход', click: this.quit }
+      ], false)
+      void this.open(false)
+    }
   }
 
-  async open(): Promise<void> {
+  private showMenu(items: MenuItemConstructorOptions[], popup: boolean): void {
+    const menu = Menu.buildFromTemplate(items)
+    if (this.platform === 'linux') this.tray.setContextMenu(menu)
+    else if (popup) this.tray.popUpContextMenu(menu)
+  }
+
+  async open(popup = true): Promise<void> {
     if (this.loading) return
     if (this.switching) {
-      this.tray.popUpContextMenu(Menu.buildFromTemplate([{ label: 'Переключение аккаунта…', enabled: false }]))
+      this.showMenu([{ label: 'Переключение аккаунта…', enabled: false }], popup)
       return
     }
     this.loading = true
@@ -38,7 +53,7 @@ export class AccountTray {
         { label: 'Управление аккаунтами…', click: this.openManagement },
         { label: 'Выход', click: this.quit }
       )
-      this.tray.popUpContextMenu(Menu.buildFromTemplate(items))
+      this.showMenu(items, popup)
     } catch (error) {
       dialog.showErrorBox('Codex Accounts', error instanceof Error ? error.message : String(error))
       this.openManagement()
@@ -51,6 +66,7 @@ export class AccountTray {
     if (this.switching) return
     this.switching = true
     this.tray.setToolTip('Переключение аккаунта Codex…')
+    if (this.platform === 'linux') this.showMenu([{ label: 'Переключение аккаунта…', enabled: false }], false)
     try {
       const response = await this.backend.invoke<{ success: boolean; message: string }>('switchProfile', { name: profile.name })
       if (!response.ok || !response.data?.success) {
@@ -62,6 +78,7 @@ export class AccountTray {
       dialog.showErrorBox('Переключение аккаунта отменено', error instanceof Error ? error.message : String(error))
     } finally {
       this.switching = false
+      if (this.platform === 'linux') void this.open(false)
     }
   }
 }

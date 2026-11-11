@@ -32,7 +32,7 @@ public static class PathSafety
         foreach (var root in allowedRoots)
         {
             var fullRoot = EnsureTrailingSeparator(Path.GetFullPath(root));
-            if (fullTarget.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
+            if (fullTarget.StartsWith(fullRoot, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
             {
                 return;
             }

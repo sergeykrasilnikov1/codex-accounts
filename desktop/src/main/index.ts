@@ -10,19 +10,21 @@ import { configureE2EUpdateFeed } from './update-feed'
 import { createWindowOptions } from './window-security'
 import { AccountTray } from './account-tray'
 import iconPath from '../../build/icon.ico?asset'
+import linuxIconPath from '../../build/account-switcher.png?asset'
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url))
-const applicationIcon = nativeImage.createFromPath(iconPath)
+const applicationIcon = nativeImage.createFromPath(process.platform === 'win32' ? iconPath : linuxIconPath)
 const { autoUpdater } = electronUpdater
 const isE2E = process.env.CODEX_SWITCHER_E2E === '1'
 configureE2EUpdateFeed(autoUpdater, isE2E, process.env.CODEX_SWITCHER_E2E_UPDATE_URL)
 let mainWindow: BrowserWindow | null = null
 let accountTray: AccountTray | null = null
+let quitting = false
 const backend = new BackendClient()
 // Keep existing desktop preferences when upgrading from the original product name.
 app.setPath('userData', join(app.getPath('appData'), 'codex-account-switcher-desktop'))
 const updates = new UpdateManager({
-  isPackaged: app.isPackaged,
+  isPackaged: app.isPackaged && (process.platform !== 'linux' || Boolean(process.env.APPIMAGE)),
   currentVersion: app.getVersion(),
   updater: autoUpdater,
   openExternal: (url) => shell.openExternal(url)
@@ -69,6 +71,7 @@ async function createMainWindow(): Promise<void> {
   mainWindow.once('ready-to-show', () => mainWindow?.show())
   mainWindow.on('closed', () => {
     mainWindow = null
+    if (!quitting && process.platform === 'linux') void accountTray?.open(false)
   })
 
   if (!app.isPackaged && process.env.ELECTRON_RENDERER_URL) {
@@ -110,6 +113,7 @@ if (!hasLock) {
 }
 
 app.on('before-quit', () => {
+  quitting = true
   accountTray?.tray.destroy()
   unregisterIpc()
   backend.dispose()
