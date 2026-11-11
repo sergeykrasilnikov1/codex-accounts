@@ -51,6 +51,13 @@ jobs:
           mkdir -p "$CODEX_HOME"
           printf 'model = "demo"\n' > "$CODEX_HOME/config.toml"
           dbus-run-session -- xvfb-run -a node tests/e2e/tray-smoke.mjs "$PWD/release/linux-unpacked/codex-accounts"
+      - name: Test encrypted archive export and import with the real keyring
+        working-directory: desktop
+        run: |
+          dbus-run-session -- bash -euc '
+            printf "ci-only-password" | gnome-keyring-daemon --unlock --components=secrets
+            xvfb-run -a node tests/e2e/archive-smoke.mjs "$PWD/release/linux-unpacked/codex-accounts"
+          '
       - uses: actions/upload-artifact@v4
         with:
           name: codex-accounts-ubuntu-x64

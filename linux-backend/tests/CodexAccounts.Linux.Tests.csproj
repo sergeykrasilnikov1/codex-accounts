@@ -13,5 +13,6 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
     <Using Include="Xunit" />
     <Compile Include="../../codex-account-switcher/CodexAccountSwitcher.Tests/LinuxSecretProtectorTests.cs" />
+    <Compile Include="../../codex-account-switcher/CodexAccountSwitcher.Tests/PortableAccountArchiveTests.cs" />
   </ItemGroup>
 </Project>

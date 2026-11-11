@@ -50,6 +50,24 @@ describe('App', () => {
     expect(document.querySelectorAll('.profile-card')).toHaveLength(0)
   })
 
+  it('requires a confirmed archive password and clears it after export', async () => {
+    const invoke = vi.fn(async (command: string) => ({ id: 'test', ok: true, data: command === 'exportAccounts' ? { count: 1 } : bootstrap, error: null })) as unknown as DesktopApi['invoke']
+    window.codexSwitcher = { invoke, selectCodexHome: vi.fn(async () => null), updates }
+    render(<App />)
+    fireEvent.click(await screen.findByRole('button', { name: /настройки/i }))
+    const save = screen.getByRole('button', { name: 'Сохранить в Google Drive' })
+    expect(save).toBeDisabled()
+    const password = screen.getByLabelText('Мастер-пароль (от 12 символов)')
+    const repeat = screen.getByLabelText('Повторите пароль для сохранения')
+    fireEvent.change(password, { target: { value: 'synthetic-password' } })
+    expect(save).toBeDisabled()
+    fireEvent.change(repeat, { target: { value: 'synthetic-password' } })
+    fireEvent.click(save)
+    await waitFor(() => expect(invoke).toHaveBeenCalledWith('exportAccounts', { password: 'synthetic-password' }))
+    expect(password).toHaveValue('')
+    expect(repeat).toHaveValue('')
+  })
+
   it('reports the active Codex process state from backend metadata', async () => {
     render(<App />)
 

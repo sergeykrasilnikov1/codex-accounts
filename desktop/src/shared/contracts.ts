@@ -1,5 +1,7 @@
 export const backendCommands = [
   'bootstrap',
+  'exportAccounts',
+  'importAccounts',
   'listProfiles',
   'addProfile',
   'deleteProfile',

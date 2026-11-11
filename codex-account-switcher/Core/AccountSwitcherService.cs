@@ -79,6 +79,54 @@ public sealed class AccountSwitcherService
         }
     }
 
+    public int TransferAccounts(string path, string password, bool importing)
+    {
+        if (!Path.IsPathFullyQualified(path) || (!importing && !Directory.Exists(path)))
+            throw new InvalidOperationException("Выберите папку Google Drive или файл архива.");
+        PortableAccount[] accounts;
+        if (importing)
+        {
+            if (new FileInfo(path).Length > PortableAccountArchive.MaximumLength) throw new InvalidDataException("Архив слишком большой.");
+            accounts = PortableAccountArchive.Decrypt(_fileSystem.ReadAllBytes(path), password);
+        }
+        else
+        {
+            var profiles = ListProfiles();
+            if (profiles.Any(profile => !profile.HasAuthJson))
+                throw new InvalidOperationException("Сначала сохраните вход для каждого профиля или удалите пустые профили.");
+            accounts = profiles.Select(profile => new PortableAccount(profile.DisplayName, _credentialStore.Read(profile.Name))).ToArray();
+        }
+        try
+        {
+            if (!importing)
+            {
+                // Each export has its own name so Drive clients cannot silently overwrite another device's archive.
+                path = Path.Combine(path, $"Codex-Accounts-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.encrypted");
+                _fileSystem.WriteAllBytesAtomic(path, PortableAccountArchive.Encrypt(accounts, password));
+            }
+            else
+            {
+                var added = new List<string>();
+                try
+                {
+                    foreach (var account in accounts)
+                    {
+                        var profile = AddProfile(account.DisplayName);
+                        added.Add(profile.Name);
+                        _credentialStore.Write(profile.Name, account.Auth);
+                    }
+                }
+                catch
+                {
+                    foreach (var name in added) DeleteProfile(name);
+                    throw;
+                }
+            }
+            return accounts.Length;
+        }
+        finally { foreach (var account in accounts) CryptographicOperations.ZeroMemory(account.Auth); }
+    }
+
     public SwitchResult DeleteProfile(string profileName)
     {
         EnsureRuntimeDirectories();

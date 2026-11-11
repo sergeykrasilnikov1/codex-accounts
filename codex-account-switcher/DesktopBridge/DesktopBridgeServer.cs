@@ -12,6 +12,8 @@ public sealed class DesktopBridgeServer
     private static readonly HashSet<string> AllowedCommands = new(StringComparer.Ordinal)
     {
         "bootstrap",
+        "exportAccounts",
+        "importAccounts",
         "listProfiles",
         "addProfile",
         "deleteProfile",
@@ -203,6 +205,8 @@ public sealed class DesktopBridgeServer
         {
             "bootstrap" => CreateBootstrap(layout, switcher),
             "listProfiles" => CreateProfiles(switcher),
+            "exportAccounts" or "importAccounts" => new { count = switcher.TransferAccounts(
+                RequiredString(payload, "path"), ArchivePassword(payload), command == "importAccounts") },
             "addProfile" => switcher.AddProfile(RequiredString(payload, "displayName")),
             "deleteProfile" => switcher.DeleteProfile(RequiredString(payload, "name")),
             "captureProfile" => await switcher.CaptureCurrentAuthAsProfileAsync(RequiredString(payload, "name"), cancellationToken),
@@ -402,6 +406,13 @@ public sealed class DesktopBridgeServer
 
         _database.SetSelectedCodexHome(found);
         return CodexHomeLayout.FromHome(found);
+    }
+
+    private static string ArchivePassword(JsonElement? payload)
+    {
+        if (payload is null || !payload.Value.TryGetProperty("password", out var password) || password.ValueKind != JsonValueKind.String)
+            throw new InvalidOperationException("Мастер-пароль не указан.");
+        return password.GetString()!;
     }
 
     private static string RequiredString(JsonElement? payload, string propertyName)

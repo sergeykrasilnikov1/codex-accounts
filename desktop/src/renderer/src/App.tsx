@@ -138,6 +138,8 @@ export default function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [newProfile, setNewProfile] = useState('')
+  const [archivePassword, setArchivePassword] = useState('')
+  const [archivePasswordRepeat, setArchivePasswordRepeat] = useState('')
   const [limitsLoading, setLimitsLoading] = useState(false)
   const [backups, setBackups] = useState<BackupSummary[]>([])
   const [backupsLoading, setBackupsLoading] = useState(false)
@@ -444,6 +446,19 @@ export default function App() {
           <section className="page-stack">
             <header className="page-header"><div><p className="eyebrow">{t('settings.eyebrow')}</p><h1>{t('settings.title')}</h1></div></header>
             <div className="settings-list">
+              <div className="setting-row archive-settings"><div className="setting-icon"><CloudCog size={19} /></div><div><strong>Google Drive · архив аккаунтов</strong><span>Выберите папку Google Drive для компьютера. На Ubuntu можно скачать архив с drive.google.com и открыть его здесь. Каждый экспорт создаёт новый файл. Импорт добавляет копии профилей, не меняя текущий вход.</span>
+                <label>Мастер-пароль (от 12 символов)<input type="password" autoComplete="off" value={archivePassword} onChange={event => setArchivePassword(event.target.value)} /></label>
+                <label>Повторите пароль для сохранения<input type="password" autoComplete="off" value={archivePasswordRepeat} onChange={event => setArchivePasswordRepeat(event.target.value)} /></label>
+                <p>Пароль не сохраняется. Без него архив нельзя восстановить. Дождитесь завершения синхронизации Google Drive.</p>
+                <div className="update-actions">{(['exportAccounts', 'importAccounts'] as const).map(command => <button key={command} className="button" disabled={busyCommand !== null || archivePassword.length < 12 || (command === 'exportAccounts' && archivePassword !== archivePasswordRepeat)} onClick={async () => {
+                  if (command === 'importAccounts' && !window.confirm('Добавить аккаунты из архива? Повторный импорт создаст копии.')) return
+                  const password = archivePassword
+                  setArchivePassword('')
+                  setArchivePasswordRepeat('')
+                  const result = await runCommand<{count: number}>(command, { password })
+                  if (result) { await refresh(); setNotice(`Аккаунтов ${command === 'exportAccounts' ? 'сохранено в зашифрованный файл' : 'добавлено'}: ${result.count}`) }
+                }}>{command === 'exportAccounts' ? 'Сохранить в Google Drive' : 'Загрузить из Google Drive'}</button>)}</div>
+              </div></div>
               <div className="setting-row"><div className="setting-icon"><FolderCog size={19} /></div><div><strong>Codex Home</strong><span>{data.diagnostics.codexHome ?? t('settings.codexHomeMissing')}</span></div><button className="button" onClick={() => void chooseCodexHome()}>{t('common.change')}</button></div>
               <div className="setting-row"><div className="setting-icon"><ShieldCheck size={19} /></div><div><strong>{t('settings.profileProtection')}</strong><span>{t('settings.profileProtectionDescription')}</span></div><span className="status-pill status-pill--ready">{t('common.enabled')}</span></div>
               <div className="setting-row"><div className="setting-icon"><Languages size={19} /></div><div><strong>{t('settings.language')}</strong><span>{t('settings.languageDescription')}</span></div><select aria-label={t('settings.languageAria')} value={data.settings.language} onChange={(event) => {

@@ -26,6 +26,17 @@ export function registerIpc(backend: BackendClient, updates: UpdateManager, trus
     if (!isBackendCommand(command)) {
       throw new Error('Unsupported desktop command.')
     }
+    if (command === 'exportAccounts' || command === 'importAccounts') {
+      const importing = command === 'importAccounts'
+      const selected = await dialog.showOpenDialog({
+        title: importing ? 'Выберите архив аккаунтов из Google Drive' : 'Выберите синхронизируемую папку Google Drive',
+        properties: [importing ? 'openFile' : 'openDirectory', 'dontAddToRecent'],
+        filters: importing ? [{ name: 'Codex Accounts', extensions: ['encrypted'] }] : []
+      })
+      if (selected.canceled || !selected.filePaths[0]) return { id: '', ok: true, data: null, error: null }
+      const password = payload && typeof payload === 'object' && 'password' in payload ? payload.password : undefined
+      payload = { path: selected.filePaths[0], password }
+    }
     const response = await backend.invoke(command, payload)
     if (command === 'setTheme' && response.ok && payload && typeof payload === 'object' && 'theme' in payload) {
       const theme = (payload as { theme?: unknown }).theme

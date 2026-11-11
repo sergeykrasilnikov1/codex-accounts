@@ -54,6 +54,23 @@ public sealed class AccountSwitcherServiceTests : IDisposable
     }
 
     [Fact]
+    public void ArchiveImportsNewProfilesWithoutReplacingExistingAccountsOrCurrentLogin()
+    {
+        var original = _service.AddProfile("Original");
+        var credentials = new ProfileCredentialStore(_layout, _fileSystem);
+        credentials.Write(original.Name, "{\"token\":\"synthetic-archive-token\"}"u8);
+        var liveAuth = File.ReadAllBytes(_layout.AuthJsonPath);
+        Assert.Equal(1, _service.TransferAccounts(_root, "synthetic-password", false));
+        var archive = Assert.Single(Directory.GetFiles(_root, "*.encrypted"));
+        Assert.Throws<InvalidDataException>(() => _service.TransferAccounts(archive, "wrong-password-value", true));
+        Assert.Single(_service.ListProfiles());
+        Assert.Equal(1, _service.TransferAccounts(archive, "synthetic-password", true));
+        var imported = Assert.Single(_service.ListProfiles().Where(profile => profile.Name != original.Name));
+        Assert.Equal(credentials.Read(original.Name), credentials.Read(imported.Name));
+        Assert.Equal(liveAuth, File.ReadAllBytes(_layout.AuthJsonPath));
+    }
+
+    [Fact]
     public void AddProfileCreatesSafeDirectoryAndListsProfile()
     {
         var profile = _service.AddProfile("Рабочий Codex");
