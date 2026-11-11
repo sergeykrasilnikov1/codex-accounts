@@ -22,7 +22,7 @@ jobs:
       - name: Install desktop and keyring dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libsecret-tools gnome-keyring dbus-x11 xvfb libgtk-3-0 libnss3 libasound2t64 libgbm1 libayatana-appindicator3-1
+          sudo apt-get install -y libsecret-tools gnome-keyring dbus-x11 xvfb libgtk-3-0 libnss3 libasound2t64 libgbm1 libayatana-appindicator3-1 python3-gi gir1.2-ayatanaappindicator3-0.1
           npm install -g pnpm@11.20.0
       - name: Test encryption, keyring, file permissions and process isolation
         run: |

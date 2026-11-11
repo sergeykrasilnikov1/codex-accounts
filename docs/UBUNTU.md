@@ -11,15 +11,15 @@
 Для Ubuntu предпочтителен `.deb`:
 
 ```bash
-sudo apt install ./Codex-Accounts-2.1.0-x64.deb
+sudo apt install ./Codex-Accounts-2.1.1-amd64.deb
 ```
 
 Перед использованием AppImage установите зависимости вручную:
 
 ```bash
-sudo apt install libsecret-tools gnome-keyring libayatana-appindicator3-1 gnome-shell-extension-appindicator libfuse2t64
-chmod +x Codex-Accounts-2.1.0-x64.AppImage
-./Codex-Accounts-2.1.0-x64.AppImage
+sudo apt install libsecret-tools gnome-keyring libayatana-appindicator3-1 python3-gi gir1.2-ayatanaappindicator3-0.1 gnome-shell-extension-appindicator libfuse2t64
+chmod +x Codex-Accounts-2.1.1-x64.AppImage
+./Codex-Accounts-2.1.1-x64.AppImage
 ```
 
 Для значка в панели GNOME требуется включённое расширение AppIndicator
@@ -49,6 +49,45 @@ desktop-сборку с доступной папкой `resources`.
 папке, а не в стандартной. Codex Home определяется через `CODEX_HOME` или `~/.codex`.
 Существующая логика работы требует файлового `auth.json`; при необходимости
 выберите файловое хранилище входа через настройки переключателя.
+
+## Лимиты и значок в панели
+
+Начиная с 2.1.1 Linux-backend получает лимиты через `account/rateLimits/read`
+встроенного в настольный Codex клиента (`resources/codex app-server`). Это позволяет
+использовать тот же механизм подключения, что и Codex, вместо прямого HTTP-запроса,
+который может получать сетевой отказ 403.
+
+Для каждого профиля создаётся отдельный временный каталог с правами `0700`.
+Режим `chatgptAuthTokens` получает только токен доступа через stdin; данные входа
+не записываются во временные файлы, refresh-токен не передаётся. Текущий аккаунт
+не переключается. После проверки дочерний процесс завершается, каталог удаляется.
+Нужен актуальный встроенный клиент с поддержкой внешних токенов. Если срок входа
+истёк, откройте соответствующий аккаунт в Codex и сохраните обновлённый вход.
+
+В Linux-меню трея показываются остатки за 5 часов и неделю. Меню аккаунтов
+появляется до завершения сетевой проверки. Значок и меню создаются через системный Ayatana AppIndicator (GTK), чтобы
+избежать несовместимости реализации Chromium с GNOME в Ubuntu 22.04. Пакет
+устанавливает `python3-gi` и `gir1.2-ayatanaappindicator3-0.1`; скрипт помощника
+и PNG упакованы вне ASAR, чтобы их могли читать системные библиотеки.
+Помощник получает только подписи пунктов и их состояния; токены в него не передаются.
+
+Если в GNOME значок не появился, проверьте расширение:
+
+```bash
+gnome-extensions info ubuntu-appindicators@ubuntu.com
+```
+
+Для восстановления зависшего расширения можно выключить и снова включить его
+без перезапуска Codex:
+
+```bash
+gnome-extensions disable ubuntu-appindicators@ubuntu.com
+gnome-extensions enable ubuntu-appindicators@ubuntu.com
+```
+
+При отсутствии настроенного встроенного клиента сохраняется прямой HTTP-способ.
+Отказ 403 теперь показывается как запрет запроса, а не как доказательство
+недействительного токена.
 
 ## Защита аккаунтов
 

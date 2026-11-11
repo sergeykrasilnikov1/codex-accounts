@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { _electron, expect } from '@playwright/test'
 
 const executablePath = process.argv[2]
@@ -30,13 +31,12 @@ try {
     }
     await popup.close()
   } else {
-    await expect.poll(() => application.evaluate(({ app }) => {
-    app.emit('second-instance')
-    const items = globalThis.traySmokeItems
-    return items?.[0]?.label === 'Загрузка аккаунтов…' ? undefined : items
-  }), { timeout: 30000 }).toBeDefined()
-  items = await application.evaluate(() => globalThis.traySmokeItems)
-  assert.ok(items?.some(item => item.label === 'Управление аккаунтами…'), 'Tray menu was not created.')
+    // Linux uses the system Ayatana implementation, outside Electron's Tray class.
+    // CI has a disposable D-Bus session without GNOME; verify the packaged helper
+    // stays alive while the real backend and management window are exercised.
+    await expect.poll(() => execFileSync('ps', ['-o', 'args=', '--ppid', String(application.process().pid)],
+      { encoding: 'utf8' }).includes('linux-indicator-'), { timeout: 10000 }).toBe(true)
+
   }
   await application.evaluate(({ app }) => app.emit('second-instance', {}, ['--manage']))
   const page = await application.firstWindow()
@@ -48,5 +48,6 @@ try {
   await expect.poll(() => application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().length)).toBe(0)
   console.log(`Tray smoke passed: ${result.data.length} accounts; lazy management window opens and closes.`)
 } finally {
-  await application.close()
+  await application.evaluate(({ app }) => app.exit(0)).catch(() => {})
+  await application.close().catch(() => {})
 }

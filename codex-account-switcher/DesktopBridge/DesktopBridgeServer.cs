@@ -266,6 +266,7 @@ public sealed class DesktopBridgeServer
     {
         using var httpClient = _httpClientFactory();
         var usageService = new CodexUsageService(httpClient);
+        var codexClient = CodexAppServerUsage.FindLinuxClient();
         var credentials = new ProfileCredentialStore(layout, _fileSystem);
         var activeProfile = switcher.ReadActiveProfile();
         using var throttle = new SemaphoreSlim(initialCount: 3, maxCount: 3);
@@ -287,7 +288,9 @@ public sealed class DesktopBridgeServer
                         ? _fileSystem.ReadAllBytes(layout.AuthJsonPath)
                         : credentials.Read(profile.Name);
                     AuthDocumentValidator.Validate(authDocument);
-                    var usage = await usageService.FetchAsync(authDocument, cancellationToken);
+                    var usage = OperatingSystem.IsLinux() && codexClient is not null
+                        ? await CodexAppServerUsage.FetchAsync(codexClient, authDocument, cancellationToken)
+                        : await usageService.FetchAsync(authDocument, cancellationToken);
                     return new DesktopLimitDto(
                         profile.Name,
                         profile.DisplayName,

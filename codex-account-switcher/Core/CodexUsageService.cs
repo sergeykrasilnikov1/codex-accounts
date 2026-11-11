@@ -51,9 +51,14 @@ public sealed class CodexUsageService
         request.Headers.UserAgent.ParseAdd("CodexAccountSwitcher/1.0");
 
         using var response = await _httpClient.SendAsync(request, cancellationToken);
-        if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        if (response.StatusCode is HttpStatusCode.Unauthorized)
         {
             return CodexUsageResult.Failed("Codex не принял текущий токен. Откройте Codex под этим профилем, дождитесь обновления входа и попробуйте снова.");
+        }
+
+        if (response.StatusCode == HttpStatusCode.Forbidden)
+        {
+            return CodexUsageResult.Failed("Сервис лимитов запретил запрос (HTTP 403). Проверьте сетевое подключение; это не обязательно ошибка входа.");
         }
 
         if (!response.IsSuccessStatusCode)

@@ -14,6 +14,9 @@ import linuxIconPath from '../../build/account-switcher.png?asset'
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url))
 const applicationIcon = nativeImage.createFromPath(process.platform === 'win32' ? iconPath : linuxIconPath)
+// Keep the panel bitmap small and independent of the full-size window artwork.
+const trayIcon = process.platform === 'linux' ? applicationIcon.resize({ width: 24, height: 24 }) : applicationIcon
+if (process.platform === 'linux') app.setDesktopName('codex-accounts.desktop')
 const { autoUpdater } = electronUpdater
 const isE2E = process.env.CODEX_SWITCHER_E2E === '1'
 configureE2EUpdateFeed(autoUpdater, isE2E, process.env.CODEX_SWITCHER_E2E_UPDATE_URL)
@@ -133,9 +136,9 @@ if (!hasLock) {
       await createMainWindow()
       return
     }
-    accountTray = new AccountTray(backend, applicationIcon,
+    accountTray = new AccountTray(backend, trayIcon,
       () => { void createMainWindow() }, () => app.quit(), process.platform,
-      process.platform === 'win32' ? () => { void createTrayWindow() } : undefined)
+      process.platform === 'win32' ? () => { void createTrayWindow() } : undefined, linuxIconPath)
     if (process.argv.includes('--manage')) await createMainWindow()
   })
   app.on('activate', () => {

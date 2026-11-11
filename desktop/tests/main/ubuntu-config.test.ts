@@ -9,7 +9,8 @@ describe('Ubuntu packaging', () => {
     expect(config.build.linux.extraResources).toContainEqual({
       from: '../artifacts/backend/linux-${arch}', to: 'backend', filter: ['**/*']
     })
-    expect(config.build.deb.depends).toEqual(expect.arrayContaining(['libsecret-tools', 'gnome-keyring']))
+    expect(config.build.deb.depends).toEqual(expect.arrayContaining(['libsecret-tools', 'gnome-keyring', 'python3-gi', 'gir1.2-ayatanaappindicator3-0.1']))
+    expect(config.build.asarUnpack).toEqual(expect.arrayContaining(['out/main/chunks/*.py', 'out/main/chunks/*.png']))
     expect(config.build.extraResources).toEqual([{ from: 'build', to: '.', filter: ['google-oauth.json'] }])
   })
 })

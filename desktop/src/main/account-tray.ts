@@ -1,17 +1,22 @@
 import { dialog, Menu, Tray, type NativeImage, type MenuItemConstructorOptions } from 'electron'
+import { LinuxIndicator } from './linux-indicator'
 import type { BackendClient } from './backend-client'
-import type { ProfileSummary } from '../shared/contracts'
+import type { ProfileSummary, ProfileLimits } from '../shared/contracts'
 
 export class AccountTray {
-  readonly tray: Tray
+  readonly tray: Tray | LinuxIndicator
   private loading = false
   private switching = false
 
   constructor(private readonly backend: BackendClient, icon: NativeImage,
     private readonly openManagement: () => void, private readonly quit: () => void,
     private readonly platform: NodeJS.Platform = process.platform,
-    private readonly openPopup?: () => void) {
-    this.tray = new Tray(icon)
+    private readonly openPopup?: () => void, linuxIconPath?: string) {
+    this.tray = this.platform === 'linux' && linuxIconPath ? new LinuxIndicator(linuxIconPath) : new Tray(icon)
+    if (this.tray instanceof LinuxIndicator) this.tray.on('unavailable', () => {
+      dialog.showErrorBox('Codex Accounts', 'Не удалось запустить значок Ubuntu. Установите python3-gi и gir1.2-ayatanaappindicator3-0.1.')
+      this.openManagement()
+    })
     this.tray.setToolTip('Codex Accounts')
     this.tray.on('click', () => { void this.open() })
     this.tray.on('right-click', () => { void this.open(false) })
@@ -26,6 +31,7 @@ export class AccountTray {
   }
 
   private showMenu(items: MenuItemConstructorOptions[], popup: boolean): void {
+    if (this.tray instanceof LinuxIndicator) { this.tray.setMenu(items); return }
     const menu = Menu.buildFromTemplate(items)
     if (this.platform === 'linux') this.tray.setContextMenu(menu)
     else this.tray.popUpContextMenu(menu)
@@ -56,6 +62,19 @@ export class AccountTray {
         { label: 'Выход', click: this.quit }
       )
       this.showMenu(items, popup)
+      if (this.platform === 'linux') {
+        // Publish the accounts immediately; a slow limits request must not hide the menu.
+        const usage = await this.backend.invoke<ProfileLimits[]>('getLimits').catch(() => null)
+        if (usage?.ok && usage.data && !this.switching) {
+          response.data.forEach((profile, index) => {
+            const limit = usage.data?.find(item => item.name === profile.name)
+            if (!limit?.success) return
+            const percent = (value: number | undefined) => value === undefined ? '—' : `${Math.round(Math.max(0, Math.min(100, value)))}%`
+            items[index].label += ` · 5 ч: ${percent(limit.fiveHour?.percentLeft)} · неделя: ${percent(limit.weekly?.percentLeft)}`
+          })
+          this.showMenu(items, false)
+        }
+      }
     } catch (error) {
       dialog.showErrorBox('Codex Accounts', error instanceof Error ? error.message : String(error))
       this.openManagement()

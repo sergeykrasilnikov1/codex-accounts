@@ -1,6 +1,6 @@
 {
   "name": "codex-accounts-desktop",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Codex Accounts — Windows tray account switcher",
   "main": "out/main/index.js",
   "author": "Codex Accounts contributors",
@@ -53,6 +53,7 @@
     "appId": "app.codexaccountswitcher.desktop",
     "productName": "Codex Accounts",
     "asar": true,
+    "asarUnpack": ["out/main/chunks/*.py", "out/main/chunks/*.png"],
     "extraResources": [{ "from": "build", "to": ".", "filter": ["google-oauth.json"] }],
     "directories": {
       "output": "release",
@@ -148,7 +149,10 @@
         "libgbm1",
         "libsecret-tools",
         "gnome-keyring",
-        "libayatana-appindicator3-1"
+        "libayatana-appindicator3-1",
+        "python3",
+        "python3-gi",
+        "gir1.2-ayatanaappindicator3-0.1"
       ]
     }
   }

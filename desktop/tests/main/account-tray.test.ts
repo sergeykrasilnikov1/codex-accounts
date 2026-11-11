@@ -55,7 +55,16 @@ describe('account tray', () => {
     const invoke = vi.fn().mockResolvedValue({ ok: true, data: profiles })
     new AccountTray({ invoke } as unknown as BackendClient, {} as NativeImage, vi.fn(), vi.fn(), 'linux')
     await vi.waitFor(() => expect(mocks.menu[0]).toMatchObject({ label: 'Первый', checked: true }))
-    expect(mocks.contextMenu).toHaveBeenCalledTimes(2)
+    expect(mocks.contextMenu).toHaveBeenCalledTimes(3)
+  })
+
+  it('shows remaining limits in the Ubuntu native menu without blocking its first publication', async () => {
+    const invoke = vi.fn(async (command: string) => command === 'getLimits'
+      ? { ok: true, data: [{ name: 'current', success: true, fiveHour: { percentLeft: 74 }, weekly: { percentLeft: 15 } }] }
+      : { ok: true, data: profiles })
+    new AccountTray({ invoke } as unknown as BackendClient, {} as NativeImage, vi.fn(), vi.fn(), 'linux')
+    await vi.waitFor(() => expect(mocks.menu[0].label).toContain('5 ч: 74% · неделя: 15%'))
+    expect(mocks.menu[0].checked).toBe(true)
   })
 
   it('shows all accounts, marks the active account and disables unavailable sign-ins', async () => {
@@ -78,7 +87,7 @@ describe('account tray', () => {
     const selected = mocks.menu[1]
     selected.click?.({} as never, {} as never, {} as never)
     selected.click?.({} as never, {} as never, {} as never)
-    expect(invoke).toHaveBeenCalledTimes(2)
+    expect(invoke.mock.calls.filter(([command]) => command === 'switchProfile')).toHaveLength(1)
     expect(invoke).toHaveBeenLastCalledWith('switchProfile', { name: 'next' })
     await tray.open()
     expect(mocks.menu[0].label).toBe('Переключение аккаунта…')
